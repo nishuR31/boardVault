@@ -1,41 +1,20 @@
-import { Board } from "../generated/prisma/client";
+/**
+ * Board Repository
+ * Version: 1.0
+ * Description: Repository for Board model with image support
+ * Last Updated: 2026-05-17
+ */
+
+import { Board } from "../generated/board-client/client";
+import { Image } from "../generated/image-client/client";
 import BaseRepository from "./baseRepository";
-import { drive, getOrCreateDriveFolder } from "../utils/drive";
-export default class BoardRepository extends BaseRepository<Board> {
+
+export default class BoardRepository extends BaseRepository<Board | Image> {
+  /**
+   * Constructor
+   * Initializes the repository with Board and Image models
+   */
   constructor() {
-    super("board");
+    super("board", "image");
   }
-
-  // your setup
-
-  createFile = async (data: any, folderId?: any, folderName?: string) => {
-    const resolvedFolderId = folderId || (await getOrCreateDriveFolder(folderName));
-    const res = await drive.files.create({
-      requestBody: {
-        name: data.filename,
-        parents: [resolvedFolderId],
-      },
-      media: {
-        mimeType: data.mimetype,
-        body: data.file, // stream directly
-      },
-    });
-
-    return res;
-  };
-
-  createPermission = async (fileId: any) => {
-    await drive.permissions.create({
-      fileId,
-      requestBody: {
-        role: "reader",
-        type: "anyone",
-      },
-    });
-
-    return {
-      fileId,
-      url: `https://drive.google.com/uc?export=view&id=${fileId}`,
-    };
-  };
 }

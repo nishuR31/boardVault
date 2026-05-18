@@ -67,8 +67,15 @@ class _MaintainersState extends State<Maintainers> {
             const SizedBox(height: 12),
             _PersonRow(
               name: 'Aman',
-              role: 'Tester & data gatherer',
+              role: 'Data aggregator and verifier',
               github: 'aman-kumar2006',
+              colorScheme: colorScheme,
+            ),
+            const SizedBox(height: 12),
+            _PersonRow(
+              name: 'Aditya',
+              role: 'Api tester',
+              github: 'technical-aditya',
               colorScheme: colorScheme,
             ),
             const SizedBox(height: 24),

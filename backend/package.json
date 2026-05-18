@@ -7,9 +7,10 @@
     "format": "bunx prettier --write .",
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
-    "prisma": "bun run prisma:gen && bun run prisma:push",
-    "prisma:gen": "bunx prisma generate",
-    "prisma:push": "bunx prisma db push",
+    "prisma": "bun run prisma:gen && bun run prisma:mig && bun run prisma:push",
+    "prisma:gen": "bunx prisma generate --schema=prisma/board.schema.prisma && bunx prisma generate --schema=prisma/image.schema.prisma",
+    "prisma:push": "bunx prisma db push --schema=prisma/board.schema.prisma && bunx prisma db push --schema=prisma/image.schema.prisma",
+    "prisma:mig": "bunx prisma migrate dev --schema=prisma/board.schema.prisma && bunx prisma migrate dev --schema=prisma/image.schema.prisma",
     "git": "cd .. && git add . && git commit -m \"kuch toh kiya hu \"&& git push -f origin main && cd backend"
   },
   "keywords": [],

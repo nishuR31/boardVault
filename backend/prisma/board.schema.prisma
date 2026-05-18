@@ -1,0 +1,39 @@
+// Board Database Schema
+// Generated Client: src/generated/board-client
+// Version: 1.0
+// Last Updated: 2026-05-17
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native"]
+  output   = "../src/generated/board-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BoardType {
+  SBC
+  MC
+
+  @@map("board_type")
+}
+
+model Board {
+  id            String      @id @default(uuid())
+  name          String      @unique
+  type          BoardType
+
+  description   String?     @default("Will be updated soon...")
+  photoFrontId  String?
+  pinDiagramId  String?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([name])
+  @@index([type])
+  @@map("boards")
+}

@@ -24,5 +24,6 @@ export type DeleteBody = {
 };
 
 export type FindOneBody = {
-  name: string;
+  name?: string;
+  id?: any;
 };

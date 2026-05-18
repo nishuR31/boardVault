@@ -4,9 +4,9 @@ import { FastifyReply } from "fastify";
 
 export function sendSuccess(
   res: FastifyReply,
-  data: any,
   message: string,
   statusCode: number,
+  data: any,
 ) {
   return res.code(statusCode).send({
     success: true,

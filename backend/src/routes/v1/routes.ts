@@ -1,24 +1,36 @@
-import { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
+import { FastifyPluginAsync } from "fastify";
+
 import {
-  deleteOne,
   create,
-  findMany,
+  deleteOne,
   findOne,
+  findById,
+  findAll,
   update,
-  uploadFile,
+  ping,
 } from "../../controllers/controller";
+
 import requireCrudPassword from "../../middlewares/auth";
 
 const routes: FastifyPluginAsync = async (app) => {
-  app.post("/create", { preHandler: requireCrudPassword }, create);
-  app.get("/findOne", findMany);
-  app.get("/ping", (req: FastifyRequest, res: FastifyReply) => {
-    res.code(200).send({ message: "pong", route: req.originalUrl });
-  });
-  app.get("/find/:name", findOne);
-  app.post("/upload", uploadFile);
-  app.delete("/delete/:id", { preHandler: requireCrudPassword }, deleteOne);
-  app.put("/update/:id", { preHandler: requireCrudPassword }, update);
+  // Health check
+  app.get("/ping", ping);
+
+  // Create
+  app.post("/boards", { preHandler: requireCrudPassword }, create);
+
+  // Read all
+  app.get("/boards", findAll);
+
+  // Read one
+  app.get("/boards/:id", findById);
+  app.get("/boards/:name", findOne);
+
+  // Update
+  app.put("/boards/:id", { preHandler: requireCrudPassword }, update);
+
+  // Delete
+  app.delete("/boards/:id", { preHandler: requireCrudPassword }, deleteOne);
 };
 
 export default routes;

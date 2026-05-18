@@ -1,5 +1,6 @@
-import "package:flutter/material.dart";
-import "footer.dart";
+import 'package:flutter/material.dart';
+import 'footer.dart';
+import 'package:go_router/go_router.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -204,7 +205,7 @@ class _HomeState extends State<Home> {
             const SizedBox(height: 20),
             GestureDetector(
               onTap: () {
-                // context.push("/boards");
+                context.push("/boards");
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,

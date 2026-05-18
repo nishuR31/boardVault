@@ -1,0 +1,27 @@
+// Image Database Schema
+// Generated Client: src/generated/image-client
+// Version: 1.0
+// Last Updated: 2026-05-17
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native"]
+  output   = "../src/generated/image-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Image {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  data      Bytes
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([name])
+  @@index([createdAt])
+  @@map("images")

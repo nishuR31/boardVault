@@ -3,8 +3,6 @@ import { CreateBody, UpdateBody } from "../types";
 import { NotFoundError } from "../utils/errors/error";
 import { getOrSet, del, set } from "../utils/cache/cache";
 import { compressImage, bufferToStream } from "../utils/imageCompress";
-import { DRIVE_FOLDER_NAME } from "../config/envConfig";
-import { getOrCreateDriveFolder } from "../utils/drive";
 
 const boardRepo = new BoardRepository();
 
@@ -13,39 +11,27 @@ const BOARD_BY_NAME = (name: string) => `board:name:${name}`;
 const BOARD_BY_ID = (id: string) => `board:id:${id}`;
 
 export default class Service {
-  async create(data: CreateBody, files?: Record<string, any>, folderId?: string) {
+  async create(data: CreateBody, files?: Record<string, any>) {
     const { password, ...payload } = data;
-    const payloadAny: any = payload;
     // if files provided, upload them first and attach urls to payload
     try {
       if (files) {
-        const uploadFolderId =
-          folderId ||
-          (await getOrCreateDriveFolder(payloadAny.name || DRIVE_FOLDER_NAME));
-        const uploadKeys: Record<string, string> = {};
-        for (const key of Object.keys(files)) {
-          const file = files[key];
-          if (!file) continue;
-          const uploaded = await this.upload(
-            {
-              filename: file.filename,
-              mimetype: file.mimetype,
-              file: file.file,
-            },
-            uploadFolderId,
-          );
-          uploadKeys[key] = uploaded.url;
+        const uploadPics: Record<string, any> = {};
+        for (const key in Object.keys(files)) {
+          const uploaded = await this.uploadPic(files[key]);
+          uploadPics[key] = uploaded;
+          if (!uploadPics[key]) continue;
         }
 
         // map known keys to payload fields
-        if (uploadKeys.photoFront) payloadAny.photoFront = uploadKeys.photoFront;
-        if (uploadKeys.pinDiagram) payloadAny.pinDiagram = uploadKeys.pinDiagram;
+        if (uploadPics.photoFront) payload.photoFront = uploadPics.photoFront;
+        if (uploadPics.pinDiagram) payload.pinDiagram = uploadPics.pinDiagram;
       }
     } catch (e) {
       // don't fail cache logic; propagate after trying to create record
     }
     // invalidate list cache, set individual cache
-    const created = await boardRepo.create(payloadAny);
+    const created = await boardRepo.create(payload);
     void Promise.all([
       del(ALL_BOARDS_KEY),
       set(BOARD_BY_ID(created.id), created, 60 * 5),
@@ -56,9 +42,14 @@ export default class Service {
     return created;
   }
 
-  async findMany() {
+  async findAll() {
     return getOrSet(ALL_BOARDS_KEY, 60, async () => {
       return boardRepo.findAll({ orderBy: { createdAt: "desc" } });
+    });
+  }
+  async findById(id: string) {
+    return getOrSet(ALL_BOARDS_KEY, 60, async () => {
+      return boardRepo.findById(id);
     });
   }
 
@@ -101,32 +92,31 @@ export default class Service {
     return deleted;
   }
 
-  async upload(data: any, folderId: any) {
+  async uploadPic(file: any) {
     try {
       if (
-        data &&
-        data.mimetype &&
-        typeof data.mimetype === "string" &&
-        data.mimetype.startsWith("image/")
+        file &&
+        file.mimetype &&
+        typeof file.mimetype === "string" &&
+        file.mimetype.startsWith("image/")
       ) {
         // compress image stream or buffer
-        const compressed = await compressImage(data.file, data.mimetype);
-        data.file = bufferToStream(compressed);
+        const compressed = await compressImage(file.file, file.mimetype);
+        file.file = bufferToStream(compressed);
         // normalize to jpeg for lossy compression when appropriate
-        if (!/png/i.test(data.mimetype)) {
-          data.mimetype = "image/jpeg";
+        if (!/png/i.test(file.mimetype)) {
+          file.mimetype = "image/jpeg";
         }
       }
     } catch (e) {
       // if compression fails, proceed with original file
     }
 
-    const createdFile = await boardRepo.createFile(data, folderId, DRIVE_FOLDER_NAME);
-    const fileId = createdFile.data.id;
-    await boardRepo.createPermission(fileId);
+    const { id, name, data } = await boardRepo.upload(file);
     return {
-      fileId,
-      url: `https://drive.google.com/uc?export=view&id=${fileId}`,
+      id,
+      name,
+      data,
     };
   }
 }

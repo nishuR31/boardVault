@@ -1,5 +1,11 @@
-import prisma from "../config/databaseConfig";
-import { Prisma } from "../generated/prisma/client";
+/**
+ * Base Repository
+ * Version: 1.0
+ * Description: Generic repository with CRUD operations for data and image models
+ * Last Updated: 2026-05-17
+ */
+
+import { dataPrisma, imagePrisma } from "../config/databaseConfig";
 import {
   AppError,
   ConflictError,
@@ -7,96 +13,149 @@ import {
   NotFoundError,
 } from "../utils/errors/error";
 
-function handlePrismaError(error: any, modelName: string, operation: string): never {
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+/**
+ * Handle Prisma errors consistently across both clients
+ */
+function handlePrismaError(error: any, dataModelName: string, operation: string): never {
+  // Check for known Prisma error codes
+  if (error?.code) {
     if (error.code === "P2025") {
-      throw new NotFoundError(`${modelName} required for ${operation} not found.`);
+      throw new NotFoundError(`${dataModelName} required for ${operation} not found.`);
     }
     if (error.code === "P2002") {
       const field = error.meta?.target ? (error.meta.target as string[]).join(", ") : "";
-
       throw new ConflictError(
         `Conflict: A record with this unique field ${field} already exists.`,
       );
     }
     if (error.code === "P2023") {
-      throw new NotFoundError(`Invalid ID format supplied for ${modelName}`);
+      throw new NotFoundError(`Invalid ID format supplied for ${dataModelName}`);
     }
   }
+
   throw new InternalServerError(
-    `[Prisma Failure]: Failed ${operation} ${modelName} due to server error.`,
+    `[Prisma Failure]: Failed ${operation} ${dataModelName} due to server error.`,
   );
 }
 
 export default class BaseRepository<T = any> {
-  protected modelName: string;
-  protected model: any;
-  constructor(modelName: string) {
-    if (!modelName || typeof modelName !== "string") {
+  protected dataModelName: string;
+  protected dataModel: any;
+  protected imageModelName: string;
+  protected imageModel: any;
+
+  constructor(dataModelName: string, imageModelName: string) {
+    if (!dataModelName || typeof dataModelName !== "string") {
       throw new AppError(
-        `A ${modelName} model name(string) is required for BaseRepository. `,
+        `A ${dataModelName} model name(string) is required for BaseRepository.`,
       );
     }
-    this.modelName = modelName;
-    this.model = (prisma as any)[modelName];
+    if (!imageModelName || typeof imageModelName !== "string") {
+      throw new AppError(
+        `A ${imageModelName} model name(string) is required for BaseRepository.`,
+      );
+    }
 
-    if (!this.model || typeof this.model.findUnique !== "function") {
-      throw new NotFoundError(`${modelName} not found or is invalid in Prisma Client.`);
+    this.dataModelName = dataModelName;
+    this.dataModel = (dataPrisma as any)[dataModelName];
+    this.imageModelName = imageModelName;
+    this.imageModel = (imagePrisma as any)[imageModelName];
+
+    if (!this.dataModel || typeof this.dataModel.findUnique !== "function") {
+      throw new NotFoundError(
+        `${dataModelName} not found or is invalid in Board Prisma Client.`,
+      );
+    }
+    if (!this.imageModel || typeof this.imageModel.findUnique !== "function") {
+      throw new NotFoundError(
+        `${imageModelName} not found or is invalid in Image Prisma Client.`,
+      );
     }
   }
+
+  /**
+   * Create a new record in the data model
+   */
   async create(data: any, options: any = {}): Promise<T> {
     try {
-      return await this.model.create({ data, ...options });
+      return await this.dataModel.create({ data, ...options });
     } catch (error) {
-      handlePrismaError(error, this.modelName, "creation");
+      handlePrismaError(error, this.dataModelName, "creation");
     }
   }
 
-  async findById(userId: string, options: any = {}) {
+  /**
+   * Upload image to image database
+   */
+  async upload(data: any, options: any = {}): Promise<any> {
     try {
-      const record = await this.model.findUnique({
+      return await this.imageModel.create({ data, ...options });
+    } catch (error) {
+      handlePrismaError(error, this.imageModelName, "creation");
+    }
+  }
+
+  /**
+   * Find record by ID
+   */
+  async findById(userId: string, options: any = {}): Promise<T> {
+    try {
+      const record = await this.dataModel.findUnique({
         where: { id: userId },
         ...options,
       });
       if (!record) {
-        throw new NotFoundError(`${this.modelName} with ID ${userId} not found`);
+        throw new NotFoundError(`${this.dataModelName} with ID ${userId} not found`);
       }
       return record;
     } catch (error) {
       if (error instanceof NotFoundError) throw error;
-      handlePrismaError(error, this.modelName, "fetching");
+      handlePrismaError(error, this.dataModelName, "fetching");
     }
   }
+
+  /**
+   * Find first record matching the condition
+   */
   async findOne(where: any, options: any = {}): Promise<T | null> {
     try {
-      return await this.model.findFirst({ where, ...options });
+      return await this.dataModel.findFirst({ where, ...options });
     } catch (error) {
-      handlePrismaError(error, this.modelName, "fetching one");
+      handlePrismaError(error, this.dataModelName, "fetching one");
     }
   }
 
+  /**
+   * Find all records
+   */
   async findAll(options: any = {}): Promise<T[]> {
     try {
-      return await this.model.findMany({ ...options });
+      return await this.dataModel.findMany({ ...options });
     } catch (error) {
-      handlePrismaError(error, this.modelName, "fetching all");
+      handlePrismaError(error, this.dataModelName, "fetching all");
     }
   }
 
+  /**
+   * Update a record by ID
+   */
   async update(id: string, data: any, options: any = {}): Promise<T> {
     try {
-      return await this.model.update({ where: { id }, data, ...options });
+      return await this.dataModel.update({ where: { id }, data, ...options });
     } catch (error) {
-      handlePrismaError(error, this.modelName, "updating");
+      handlePrismaError(error, this.dataModelName, "updating");
     }
   }
 
+  /**
+   * Delete a record by ID
+   */
   async deleteOne(id: string, options: any = {}): Promise<boolean> {
     try {
-      await this.model.delete({ where: { id }, ...options });
+      await this.dataModel.delete({ where: { id }, ...options });
       return true;
     } catch (error) {
-      handlePrismaError(error, this.modelName, "deleting");
+      handlePrismaError(error, this.dataModelName, "deleting");
     }
   }
 }

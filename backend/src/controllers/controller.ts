@@ -28,24 +28,12 @@ export const create = asyncHandler(
     // collect multipart files (photoFront, photoBack, pinDiagram) if any
     const files: Record<string, any> = {};
     // folderId may come in body for Drive destination
-    const bodyAny: any = req.body as any;
-    const folderId = bodyAny?.folderId;
+    const { photoFront, pinDiagram, ...payload } = req.body as any;
+    files[photoFront] = photoFront;
+    files[pinDiagram] = pinDiagram;
 
-    if (typeof (req as any).isMultipart === "function" && (req as any).isMultipart()) {
-      if ((req as any).files && typeof (req as any).files === "function") {
-        for await (const part of (req as any).files()) {
-          if (!part || !part.fieldname) continue;
-          files[part.fieldname] = part;
-        }
-      }
-    }
-
-    const result = await service.create(
-      req.body,
-      Object.keys(files).length ? files : undefined,
-      folderId,
-    );
-    sendSuccess(res, result, "Data successfully added", STATUS_CODES.CREATED);
+    const result = await service.create(payload, files);
+    sendSuccess(res, "Data successfully added", STATUS_CODES.CREATED, result);
   },
 );
 
@@ -53,38 +41,30 @@ export const deleteOne = asyncHandler(async (req: DeleteRequest, res: FastifyRep
   const { id } = req.params;
   const result = await service.deleteOne(id);
 
-  sendSuccess(res, result, "Deletion successful", STATUS_CODES.OK);
+  sendSuccess(res, "Deletion successful", STATUS_CODES.OK, result);
 });
 
 export const findOne = asyncHandler(async (req: FindOneRequest, res: FastifyReply) => {
   const { name } = req.params;
-  const result = await service.findOne(name);
-  sendSuccess(res, result, "Data found successful", STATUS_CODES.OK);
+  const result = await service.findOne(name as string);
+  sendSuccess(res, "Data found successful", STATUS_CODES.OK, result);
 });
-export const findMany = asyncHandler(async (req: FastifyRequest, res: FastifyReply) => {
-  const result = await service.findMany();
-  sendSuccess(res, result, "Data found successful", STATUS_CODES.OK);
+export const findById = asyncHandler(async (req: FindOneRequest, res: FastifyReply) => {
+  const { id } = req.params;
+  const result = await service.findById(id);
+  sendSuccess(res, "Data found successful", STATUS_CODES.OK, result);
+});
+export const findAll = asyncHandler(async (req: FastifyRequest, res: FastifyReply) => {
+  const result = await service.findAll();
+  sendSuccess(res, "Data found successful", STATUS_CODES.OK, result);
 });
 
 export const update = asyncHandler(async (req: UpdateRequest, res: FastifyReply) => {
   const { id } = req.params;
   const result = await service.update(id, req.body);
-  sendSuccess(res, result, "Data updated successfully", STATUS_CODES.OK);
+  sendSuccess(res, "Data updated successfully", STATUS_CODES.OK, result);
 });
 
-export const uploadFile = asyncHandler(
-  async (
-    req: FastifyRequest<{
-      Body: {
-        file: { type: any; required: true };
-        folderId: { type: any; required: true };
-      };
-    }>,
-    res: FastifyReply,
-  ) => {
-    const folderId = req.body.folderId;
-    const file = await req.file();
-    const response = await service.upload(file, folderId);
-    sendSuccess(res, response, "File uploaded successfully", STATUS_CODES.OK);
-  },
-);
+export const ping = asyncHandler(async (req: FastifyRequest, res: FastifyReply) => {
+  sendSuccess(res, "pong", STATUS_CODES.OK, "pong");
+});
