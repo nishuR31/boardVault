@@ -5,29 +5,15 @@
  * Last Updated: 2026-05-17
  */
 
-import { PrismaClient as BoardPrismaClient } from "../generated/board-client";
-import { PrismaClient as ImagePrismaClient } from "../generated/image-client";
+import { PrismaClient as BoardPrismaClient } from "../generated/board-client/client";
+import { PrismaClient as ImagePrismaClient } from "../generated/image-client/client";
 import { DATABASE_URL, IMAGE_DATABASE_URL, NODE_ENV } from "./envConfig";
 
 // Board Database Client
-const dataPrisma = new BoardPrismaClient({
-  datasources: {
-    db: {
-      url: DATABASE_URL,
-    },
-  },
-  log: NODE_ENV === "development" ? ["error", "query", "warn"] : ["warn", "error"],
-});
+const dataPrisma = new BoardPrismaClient(DATABASE_URL as any | string);
 
 // Image Database Client
-const imagePrisma = new ImagePrismaClient({
-  datasources: {
-    db: {
-      url: IMAGE_DATABASE_URL,
-    },
-  },
-  log: NODE_ENV === "development" ? ["error", "query", "warn"] : ["warn", "error"],
-});
+const imagePrisma = new ImagePrismaClient(IMAGE_DATABASE_URL as any | string);
 
 /**
  * Shutdown handler for graceful disconnection

@@ -112,11 +112,7 @@ export default class Service {
       // if compression fails, proceed with original file
     }
 
-    const { id, name, data } = await boardRepo.upload(file);
-    return {
-      id,
-      name,
-      data,
-    };
+    const { id } = await boardRepo.upload(file);
+    return id;
   }
 }
