@@ -22,12 +22,7 @@ const startServer = async () => {
 
 // await basePrisma.$connect();
 await startServer();
-try {
-  await redis.connect();
-  console.info("Redis connected");
-} catch (err) {
-  console.warn("Redis connection failed —", err?.message || err);
-}
+await redis.connect();
 
 async function gracefulShutdown(signal: string) {
   console.info(`\n Received ${signal}. Shutting down gracefully…`);
