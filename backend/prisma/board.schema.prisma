@@ -3,15 +3,15 @@
 // Version: 1.0
 // Last Updated: 2026-05-17
 
-generator client {
+generator clientBoard {
   provider = "prisma-client-js"
   binaryTargets = ["native"]
   output   = "../src/generated/board-client"
 }
 
-datasource db {
+datasource dbBoard {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DB_URL")
 }
 
 enum BoardType {
@@ -27,8 +27,8 @@ model Board {
   type          BoardType
 
   description   String?     @default("Will be updated soon...")
-  photoFrontId  String?
-  pinDiagramId  String?
+  photoFrontId  String?     @default("Will be updated soon...")
+  pinDiagramId  String?     @default("Will be updated soon...")
 
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt

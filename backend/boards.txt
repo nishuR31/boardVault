@@ -1,0 +1,72 @@
+[
+  {
+    "name": "Arduino Uno R3",
+    "type": "MC",
+    "description": "Arduino Uno R3 is a beginner-friendly microcontroller board based on the ATmega328P. It provides a straightforward development experience via the Arduino ecosystem (IDE, libraries, shields) and a large community. Typical projects include simple robotics, sensor logging, LED projects, and educational exercises. Use cases: learning embedded programming, prototyping simple sensors/actuators, small robotics, and classroom labs. Limitations: limited RAM/flash, no built-in Wi‑Fi/Bluetooth, not suitable for heavy DSP or multitasking. Alternatives: Arduino Nano, Arduino Mega, ATmega328P standalone. Recommended for beginners and educators.",
+    "photo": "Search: 'Arduino Uno R3 board image'",
+    "pinDiagram": "Search: 'Arduino Uno R3 pin diagram labeled'"
+  },
+  {
+    "name": "ESP32 DevKit V1",
+    "type": "MC",
+    "description": "ESP32 DevKit V1 is a versatile 32-bit microcontroller with integrated Wi‑Fi and Bluetooth. It supports FreeRTOS, has multiple I/O interfaces (ADC, DAC, SPI, I2C, UART), and is suitable for connected IoT devices and lightweight edge compute tasks. Use cases: IoT sensors and gateways, wireless control (BLE/Wi‑Fi), home automation. Limitations: higher power consumption when active; pin multiplexing can be confusing. Alternatives: ESP8266 (cheaper Wi‑Fi only), nRF52 (BLE-focused). Recommended for IoT projects requiring networking.",
+    "photo": "Search: 'ESP32 DevKit V1 board image'",
+    "pinDiagram": "Search: 'ESP32 pin diagram labeled'"
+  },
+  {
+    "name": "STM32F103C8T6 Blue Pill",
+    "type": "MC",
+    "description": "The Blue Pill is an inexpensive 32-bit ARM Cortex‑M3 development board (STM32F103) offering more performance than 8-bit MCUs. Suitable for real-time control, motor drivers, and advanced embedded applications. Use cases: embedded control, real-time data logging, bare-metal or RTOS projects. Limitations: smaller beginner community and more advanced toolchain setup. Alternatives: STM32 Nucleo boards, Teensy, ESP32. Recommended for intermediate embedded developers.",
+    "photo": "Search: 'STM32 Blue Pill board image'",
+    "pinDiagram": "Search: 'STM32F103C8T6 pin diagram'"
+  },
+  {
+    "name": "ATmega328P Microcontroller",
+    "type": "MC",
+    "description": "ATmega328P is the 8-bit AVR microcontroller used on the Arduino Uno. As a standalone chip it powers compact, low-cost designs where the full Arduino board is unnecessary. Use cases: custom low-cost production boards, simple embedded tasks, educational experiments. Limitations: 8-bit architecture, limited memory, no native networking. Alternatives: ATmega32U4, ARM Cortex‑M microcontrollers. Recommended for low-cost production units and educators.",
+    "photo": "Search: 'ATmega328P IC image'",
+    "pinDiagram": "Search: 'ATmega328P pin diagram 28-pin'"
+  },
+  {
+    "name": "PIC16F877A",
+    "type": "MC",
+    "description": "PIC16F877A is a classic 8-bit PIC microcontroller used widely in academic and industrial projects. It features many I/O pins and ADC channels, making it suitable for legacy industrial control and labs. Use cases: industrial control (legacy), academic labs, sensor interfacing. Limitations: older 8-bit architecture and different toolchain. Alternatives: PIC18 series, AVR/ARM MCUs. Recommended for legacy PIC systems and teaching.",
+    "photo": "Search: 'PIC16F877A IC image'",
+    "pinDiagram": "Search: 'PIC16F877A pin diagram 40-pin'"
+  },
+  {
+    "name": "Raspberry Pi 4 Model B",
+    "type": "SBC",
+    "description": "Raspberry Pi 4 Model B is a full single-board computer capable of running desktop Linux. It offers multiple USB ports, HDMI, onboard Ethernet/Wi‑Fi, and a 40-pin GPIO header. Use cases: edge AI (with accelerators), home servers, robotics with ROS, and prototyping cloud-connected apps. Limitations: higher power needs, not real-time, possible thermal throttling. Alternatives: ODROID, Orange Pi, Jetson Nano for AI workloads. Recommended for projects needing Linux or GUIs.",
+    "photo": "Search: 'Raspberry Pi 4 board image'",
+    "pinDiagram": "Search: 'Raspberry Pi 4 GPIO pin diagram'"
+  },
+  {
+    "name": "BeagleBone Black Rev C",
+    "type": "SBC",
+    "description": "BeagleBone Black is an open-source SBC focused on I/O and real-time-capable interfaces (PRUs). It is favored in industrial and robotics applications that require deterministic control. Use cases: industrial control, real-time I/O tasks, robotics. Limitations: smaller community and fewer multimedia features compared to Raspberry Pi. Alternatives: Raspberry Pi for general tasks, industrial PLCs for hardened deployments. Recommended for I/O-focused projects.",
+    "photo": "Search: 'BeagleBone Black board image'",
+    "pinDiagram": "Search: 'BeagleBone Black pin diagram'"
+  },
+  {
+    "name": "NVIDIA Jetson Nano Developer Kit",
+    "type": "SBC",
+    "description": "Jetson Nano is a compact, GPU-accelerated SBC for AI and machine learning at the edge. It supports frameworks like TensorFlow and PyTorch for vision and inference workloads. Use cases: edge AI inference, computer vision pipelines, robotics with onboard neural networks. Limitations: higher power draw and heat; complex software stack. Alternatives: Raspberry Pi + Coral TPU, Xavier for heavier workloads. Recommended for edge AI developers.",
+    "photo": "Search: 'Jetson Nano board image'",
+    "pinDiagram": "Search: 'Jetson Nano GPIO pin diagram'"
+  },
+  {
+    "name": "Orange Pi PC",
+    "type": "SBC",
+    "description": "Orange Pi PC is an affordable SBC similar to Raspberry Pi. It provides basic Linux capability for lightweight server tasks and IoT gateways. Use cases: budget media servers, lightweight IoT gateways, learning Linux on SBCs. Limitations: less mature software support and smaller community. Alternatives: Raspberry Pi Zero/3/4 based on needs. Recommended for cost-sensitive prototypes.",
+    "photo": "Search: 'Orange Pi PC board image'",
+    "pinDiagram": "Search: 'Orange Pi PC pin diagram'"
+  },
+  {
+    "name": "ASUS Tinker Board S",
+    "type": "SBC",
+    "description": "ASUS Tinker Board S is a performance-oriented SBC with improved multimedia capabilities and audio/video features. Use cases: multimedia players, digital signage, and advanced hobbyist projects. Limitations: smaller ecosystem than Raspberry Pi; may need manual driver tweaks. Alternatives: Raspberry Pi 4, Odroid boards. Recommended for multimedia-heavy SBC projects.",
+    "photo": "Search: 'ASUS Tinker Board S image'",
+    "pinDiagram": "Search: 'Tinker Board GPIO pin diagram'"
+  }
+]

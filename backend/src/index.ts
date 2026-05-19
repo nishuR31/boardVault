@@ -1,7 +1,6 @@
 import app from "./config/serverConfig";
 import { PORT, NODE_ENV } from "./config/envConfig";
 import redis, { disconnectRedis } from "./config/redisConfig";
-import basePrisma from "./config/databaseConfig";
 
 const startServer = async () => {
   try {

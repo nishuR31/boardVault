@@ -1,8 +1,0 @@
-// This schema.prisma is deprecated.
-// Use separate schema files instead:
-// - board.schema.prisma: For Board model and datadb datasource
-// - image.schema.prisma: For Image model and imagedb datasource
-//
-// Generated Prisma clients are available at:
-// - src/generated/board-client: BoardPrisma client
-// - src/generated/image-client: ImagePrisma client

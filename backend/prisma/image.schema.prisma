@@ -3,15 +3,15 @@
 // Version: 1.0
 // Last Updated: 2026-05-17
 
-generator client {
+generator clientImage {
   provider = "prisma-client-js"
   binaryTargets = ["native"]
   output   = "../src/generated/image-client"
 }
 
-datasource db {
+datasource dbImage {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("IMG_URL")
 }
 
 model Image {
@@ -23,5 +23,5 @@ model Image {
   updatedAt DateTime    @updatedAt
 
   @@index([name])
-  @@index([createdAt])
   @@map("images")
+}

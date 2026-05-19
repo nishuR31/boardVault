@@ -22,9 +22,10 @@ const routes: FastifyPluginAsync = async (app) => {
   // Read all
   app.get("/boards", findAll);
 
-  // Read one
+  // Read one by id
   app.get("/boards/:id", findById);
-  app.get("/boards/:name", findOne);
+  // Read one by name (distinct path to avoid route conflict)
+  app.get("/boards/name/:name", findOne);
 
   // Update
   app.put("/boards/:id", { preHandler: requireCrudPassword }, update);

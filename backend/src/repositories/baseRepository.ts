@@ -20,22 +20,36 @@ function handlePrismaError(error: any, dataModelName: string, operation: string)
   // Check for known Prisma error codes
   if (error?.code) {
     if (error.code === "P2025") {
-      throw new NotFoundError(`${dataModelName} required for ${operation} not found.`);
+      throw new NotFoundError(`${dataModelName} required for ${operation} not found.`, {
+        original: { message: error.message, code: error.code, meta: error.meta },
+      });
     }
     if (error.code === "P2002") {
       const field = error.meta?.target ? (error.meta.target as string[]).join(", ") : "";
       throw new ConflictError(
         `Conflict: A record with this unique field ${field} already exists.`,
+        { original: { message: error.message, code: error.code, meta: error.meta } },
       );
     }
     if (error.code === "P2023") {
-      throw new NotFoundError(`Invalid ID format supplied for ${dataModelName}`);
+      throw new NotFoundError(`Invalid ID format supplied for ${dataModelName}`, {
+        original: { message: error.message, code: error.code, meta: error.meta },
+      });
     }
   }
 
-  throw new InternalServerError(
-    `[Prisma Failure]: Failed ${operation} ${dataModelName} due to server error.`,
-  );
+  // Attach original error details for easier debugging while keeping message stable
+  const message = `[Prisma Failure]: Failed ${operation} ${dataModelName} due to server error.`;
+  const details = {
+    original: {
+      message: error?.message || String(error),
+      code: error?.code,
+      meta: error?.meta,
+      stack: error?.stack,
+    },
+  };
+
+  throw new InternalServerError(message, details);
 }
 
 export default class BaseRepository<T = any> {
