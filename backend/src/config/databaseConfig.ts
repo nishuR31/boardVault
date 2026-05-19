@@ -5,20 +5,32 @@
  * Last Updated: 2026-05-17
  */
 
-import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient as BoardPrismaClient } from "../generated/board-client/client";
 import { PrismaClient as ImagePrismaClient } from "../generated/image-client/client";
 import { DATABASE_URL, IMAGE_DATABASE_URL, NODE_ENV } from "./envConfig";
 
+function createPrismaClient(Client: any, datasourceUrl?: string) {
+  if (
+    !datasourceUrl ||
+    typeof datasourceUrl !== "string" ||
+    datasourceUrl.trim() === ""
+  ) {
+    throw new Error(
+      `Missing Prisma datasource URL for ${Client?.name || "PrismaClient"}. Set the matching env var in .env.`,
+    );
+  }
+
+  return new Client({
+    datasourceUrl,
+    log: NODE_ENV === "development" ? ["error", "query", "warn"] : ["warn", "error"],
+  });
+}
+
 // Board Database Client
-const dataPrisma = new BoardPrismaClient({
-  log: NODE_ENV === "development" ? ["error", "query", "warn"] : ["warn", "error"],
-});
+const dataPrisma = createPrismaClient(BoardPrismaClient, DATABASE_URL);
 
 // Image Database Client
-const imagePrisma = new ImagePrismaClient({
-  log: NODE_ENV === "development" ? ["error", "query", "warn"] : ["warn", "error"],
-});
+const imagePrisma = createPrismaClient(ImagePrismaClient, IMAGE_DATABASE_URL);
 
 /**
  * Shutdown handler for graceful disconnection

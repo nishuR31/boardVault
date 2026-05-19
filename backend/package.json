@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "test": "bun run test/test.ts",
+    "test": "bun run test/run-test.ts",
     "format": "bunx prettier --write .",
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
