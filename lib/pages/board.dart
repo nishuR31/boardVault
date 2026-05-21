@@ -28,41 +28,44 @@ class _BoardDetailState extends State<BoardDetail> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Board Details'),
-        elevation: 2,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Board Details'), elevation: 2),
       body: FutureBuilder<Board>(
         future: _boardFuture,
         builder: (context, snapshot) {
+          // Loading
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading board details...'),
+                ],
+              ),
+            );
           }
 
+          // Error
           if (snapshot.hasError) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: colorScheme.error,
-                  ),
+                  Icon(Icons.error_outline, size: 64, color: colorScheme.error),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading board details',
+                    'Error loading board',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    snapshot.error.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
@@ -74,38 +77,41 @@ class _BoardDetailState extends State<BoardDetail> {
             );
           }
 
+          // No data
           if (!snapshot.hasData) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.memory,
-                    size: 64,
-                    color: colorScheme.tertiary,
-                  ),
+                  Icon(Icons.memory, size: 64, color: colorScheme.tertiary),
                   const SizedBox(height: 16),
-                  const Text('No board found'),
+                  const Text('Board not found'),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => context.pop(),
+                    child: const Text('Go Back'),
+                  ),
                 ],
               ),
             );
           }
 
+          // Data loaded
           final board = snapshot.data!;
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header section with main image
-                _BuildHeaderSection(board: board),
+                // Header image
+                _buildHeaderImage(board, colorScheme),
 
-                // Board info section
+                // Content
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Title and type
+                      // Title + type
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -125,7 +131,7 @@ class _BoardDetailState extends State<BoardDetail> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Slug: ${board.slug}',
+                                  board.slug,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: colorScheme.onSurfaceVariant,
@@ -135,25 +141,25 @@ class _BoardDetailState extends State<BoardDetail> {
                             ),
                           ),
                           Chip(
-                            label: Text(
-                              board.type,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
+                            label: Text(board.type),
+                            backgroundColor: colorScheme.tertiary.withOpacity(
+                              0.2,
                             ),
-                            backgroundColor: colorScheme.tertiary.withOpacity(0.2),
-                            labelStyle: TextStyle(color: colorScheme.tertiary),
+                            labelStyle: TextStyle(
+                              color: colorScheme.tertiary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
                       // Description
                       Text(
                         'Description',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
                               fontWeight: FontWeight.bold,
                               color: colorScheme.primary,
                             ),
@@ -165,9 +171,7 @@ class _BoardDetailState extends State<BoardDetail> {
                         decoration: BoxDecoration(
                           color: colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: colorScheme.outlineVariant,
-                          ),
+                          border: Border.all(color: colorScheme.outlineVariant),
                         ),
                         child: Text(
                           board.description,
@@ -180,15 +184,15 @@ class _BoardDetailState extends State<BoardDetail> {
 
                       const SizedBox(height: 24),
 
-                      // Category
+                      // Categories
                       if (board.category.isNotEmpty) ...[
                         Text(
-                          'Category',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.primary,
-                                  ),
+                          'Categories',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Wrap(
@@ -198,18 +202,18 @@ class _BoardDetailState extends State<BoardDetail> {
                               .map((cat) => Chip(label: Text(cat)))
                               .toList(),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                       ],
 
-                      // Best For
+                      // Best for
                       if (board.bestFor.isNotEmpty) ...[
                         Text(
                           'Best For',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.primary,
-                                  ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Column(
@@ -224,31 +228,29 @@ class _BoardDetailState extends State<BoardDetail> {
                                     children: [
                                       Icon(
                                         Icons.check_circle,
-                                        size: 18,
+                                        size: 16,
                                         color: colorScheme.tertiary,
                                       ),
                                       const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(item),
-                                      ),
+                                      Expanded(child: Text(item)),
                                     ],
                                   ),
                                 ),
                               )
                               .toList(),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                       ],
 
                       // Alternatives
                       if (board.alternatives.isNotEmpty) ...[
                         Text(
                           'Alternative Boards',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.primary,
-                                  ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         Column(
@@ -256,26 +258,25 @@ class _BoardDetailState extends State<BoardDetail> {
                           children: board.alternatives
                               .map(
                                 (item) => Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 4,
+                                  ),
                                   child: Row(
                                     children: [
                                       Icon(
                                         Icons.arrow_right,
-                                        size: 18,
+                                        size: 16,
                                         color: colorScheme.secondary,
                                       ),
                                       const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(item),
-                                      ),
+                                      Expanded(child: Text(item)),
                                     ],
                                   ),
                                 ),
                               )
                               .toList(),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
                       ],
 
                       // Metadata
@@ -285,58 +286,40 @@ class _BoardDetailState extends State<BoardDetail> {
                         decoration: BoxDecoration(
                           color: colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: colorScheme.outlineVariant,
-                          ),
+                          border: Border.all(color: colorScheme.outlineVariant),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Board Info',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleSmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              'Info',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
+                            const SizedBox(height: 12),
+                            _InfoRow('ID', board.id),
                             const SizedBox(height: 8),
-                            _InfoRow(
-                              'Board ID',
-                              board.id,
-                              isMonospace: true,
-                            ),
+                            _InfoRow('Type', board.type),
                             const SizedBox(height: 8),
-                            _InfoRow(
-                              'Type',
-                              board.type,
-                            ),
+                            _InfoRow('Created', _formatDate(board.createdAt)),
                             const SizedBox(height: 8),
-                            _InfoRow(
-                              'Created',
-                              _formatDate(board.createdAt),
-                            ),
-                            const SizedBox(height: 8),
-                            _InfoRow(
-                              'Updated',
-                              _formatDate(board.updatedAt),
-                            ),
+                            _InfoRow('Updated', _formatDate(board.updatedAt)),
                           ],
                         ),
                       ),
 
                       const SizedBox(height: 24),
 
-                      // Images section
-                      if (board.photoFrontId != null || board.pinDiagramId != null) ...[
+                      // Images
+                      if (board.photoFrontId != null ||
+                          board.pinDiagramId != null) ...[
                         Text(
-                          'Board Images',
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.primary,
-                                  ),
+                          'Images',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: colorScheme.primary,
+                              ),
                         ),
                         const SizedBox(height: 12),
                         if (board.photoFrontId != null) ...[
@@ -364,142 +347,100 @@ class _BoardDetailState extends State<BoardDetail> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
-  }
-}
+  Widget _buildHeaderImage(Board board, ColorScheme colorScheme) {
+    if (board.photoFrontId == null || board.photoFrontId!.isEmpty) {
+      return Container(
+        height: 250,
+        width: double.infinity,
+        color: colorScheme.surfaceContainerHighest,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.memory, size: 64, color: colorScheme.tertiary),
+            const SizedBox(height: 16),
+            const Text('No image available'),
+          ],
+        ),
+      );
+    }
 
-/// Header section with main image
-class _BuildHeaderSection extends StatelessWidget {
-  final Board board;
-
-  const _BuildHeaderSection({required this.board});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
+    return SizedBox(
+      height: 250,
       width: double.infinity,
-      color: colorScheme.surfaceContainerHighest,
-      child: Column(
-        children: [
-          if (board.photoFrontId != null && board.photoFrontId!.isNotEmpty)
-            SizedBox(
-              height: 300,
-              width: double.infinity,
-              child: Image.network(
-                board.photoFrontId!,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: colorScheme.surfaceContainerHighest,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.image_not_supported,
-                          size: 64,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text('Image not available'),
-                      ],
-                    ),
-                  );
-                },
-                loadingBuilder: (context, child, progress) {
-                  return Container(
-                    color: colorScheme.surfaceContainerHighest,
-                    child: progress == null
-                        ? child
-                        : const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                  );
-                },
-              ),
-            )
-          else
-            Container(
-              height: 200,
-              width: double.infinity,
-              color: colorScheme.surfaceContainerHighest,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.memory,
-                    size: 64,
-                    color: colorScheme.tertiary,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('No image available'),
-                ],
-              ),
+      child: Image.network(
+        board.photoFrontId!,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, progress) {
+          return Container(
+            color: colorScheme.surfaceContainerHighest,
+            child: progress == null
+                ? child
+                : const Center(child: CircularProgressIndicator()),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: colorScheme.surfaceContainerHighest,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.image_not_supported,
+                  size: 64,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(height: 16),
+                const Text('Failed to load image'),
+              ],
             ),
-        ],
+          );
+        },
       ),
     );
   }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
 }
 
-/// Single info row widget
 class _InfoRow extends StatelessWidget {
   final String label;
   final String value;
-  final bool isMonospace;
 
-  const _InfoRow(
-    this.label,
-    this.value, {
-    this.isMonospace = false,
-  });
+  const _InfoRow(this.label, this.value);
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return Row(
       children: [
         SizedBox(
-          width: 80,
+          width: 70,
           child: Text(
             label,
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: colorScheme.onSurfaceVariant,
+              fontSize: 12,
             ),
           ),
         ),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontFamily: isMonospace ? 'monospace' : null,
-              fontSize: isMonospace ? 11 : null,
-            ),
-          ),
-        ),
+        Expanded(child: Text(value, style: const TextStyle(fontSize: 13))),
       ],
     );
   }
 }
 
-/// Image card widget for gallery images
 class _ImageCard extends StatelessWidget {
   final String title;
   final String imageUrl;
 
-  const _ImageCard({
-    required this.title,
-    required this.imageUrl,
-  });
+  const _ImageCard({required this.title, required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -508,9 +449,9 @@ class _ImageCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Text(
               title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           ClipRRect(
@@ -524,6 +465,14 @@ class _ImageCard extends StatelessWidget {
               child: Image.network(
                 imageUrl,
                 fit: BoxFit.cover,
+                loadingBuilder: (context, child, progress) {
+                  return Container(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: progress == null
+                        ? child
+                        : const Center(child: CircularProgressIndicator()),
+                  );
+                },
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: colorScheme.surfaceContainerHighest,
@@ -539,16 +488,6 @@ class _ImageCard extends StatelessWidget {
                         const Text('Image not available'),
                       ],
                     ),
-                  );
-                },
-                loadingBuilder: (context, child, progress) {
-                  return Container(
-                    color: colorScheme.surfaceContainerHighest,
-                    child: progress == null
-                        ? child
-                        : const Center(
-                            child: CircularProgressIndicator(),
-                          ),
                   );
                 },
               ),

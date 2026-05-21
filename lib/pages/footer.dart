@@ -22,37 +22,35 @@ class Footer extends StatelessWidget {
         children: [
           Divider(color: colorScheme.outlineVariant),
           const SizedBox(height: 14),
-          Expanded(
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: () => context.push("/"),
-                  child: Container(
-                    width: 64,
-                    height: 64,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+          Column(
+            children: [
+              GestureDetector(
+                onTap: () => context.push("/"),
+                child: Container(
+                  width: 64,
+                  height: 64,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
 
-                    child: Image.asset('logo.png', fit: BoxFit.contain),
+                  child: Image.asset('logo.png', fit: BoxFit.contain),
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => context.push("/"),
+                child: Text(
+                  'Board Vault',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.primary,
                   ),
                 ),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () => context.push("/"),
-                  child: Text(
-                    'Board Vault',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           Wrap(

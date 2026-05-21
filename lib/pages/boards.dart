@@ -17,7 +17,6 @@ class _BoardsState extends State<Boards> {
   List<Board> _filteredBoards = [];
   String _searchQuery = '';
   String _selectedType = '';
-  String _selectedCategory = '';
 
   final TextEditingController _searchController = TextEditingController();
 
@@ -25,7 +24,13 @@ class _BoardsState extends State<Boards> {
   void initState() {
     super.initState();
     boardService = BoardService();
-    _boardsFuture = boardService.fetchBoards();
+    _boardsFuture = boardService.fetchBoards().then((boards) {
+      setState(() {
+        _allBoards = boards;
+        _filteredBoards = boards;
+      });
+      return boards;
+    });
   }
 
   @override
@@ -34,26 +39,26 @@ class _BoardsState extends State<Boards> {
     super.dispose();
   }
 
-  void _filterBoards() {
+  void _applyFilters() {
     List<Board> filtered = _allBoards;
 
     // Filter by search query
     if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
       filtered = filtered
-          .where((board) =>
-              board.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              board.description.toLowerCase().contains(_searchQuery.toLowerCase()))
+          .where(
+            (board) =>
+                board.name.toLowerCase().contains(query) ||
+                board.description.toLowerCase().contains(query),
+          )
           .toList();
     }
 
     // Filter by type
     if (_selectedType.isNotEmpty) {
-      filtered = boardService.filterByType(filtered, _selectedType);
-    }
-
-    // Filter by category
-    if (_selectedCategory.isNotEmpty) {
-      filtered = boardService.filterByCategory(filtered, _selectedCategory);
+      filtered = filtered
+          .where((board) => board.type == _selectedType)
+          .toList();
     }
 
     setState(() {
@@ -61,25 +66,13 @@ class _BoardsState extends State<Boards> {
     });
   }
 
-  void _updateSearch(String query) {
+  void _resetFilters() {
+    _searchController.clear();
     setState(() {
-      _searchQuery = query;
+      _searchQuery = '';
+      _selectedType = '';
+      _filteredBoards = _allBoards;
     });
-    _filterBoards();
-  }
-
-  void _updateTypeFilter(String? type) {
-    setState(() {
-      _selectedType = type ?? '';
-    });
-    _filterBoards();
-  }
-
-  void _updateCategoryFilter(String? category) {
-    setState(() {
-      _selectedCategory = category ?? '';
-    });
-    _filterBoards();
   }
 
   @override
@@ -87,54 +80,72 @@ class _BoardsState extends State<Boards> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Microcontroller Boards'),
-        elevation: 2,
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Boards'), elevation: 2),
       body: FutureBuilder<List<Board>>(
         future: _boardsFuture,
         builder: (context, snapshot) {
+          // Loading state
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading boards...'),
+                ],
+              ),
+            );
           }
 
+          // Error state
           if (snapshot.hasError) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: colorScheme.error,
-                  ),
+                  Icon(Icons.error_outline, size: 64, color: colorScheme.error),
                   const SizedBox(height: 16),
                   Text(
                     'Error loading boards',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    snapshot.error.toString(),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _boardsFuture = boardService.fetchBoards().then((
+                          boards,
+                        ) {
+                          _allBoards = boards;
+                          _filteredBoards = boards;
+                          return boards;
+                        });
+                      });
+                    },
+                    child: const Text('Retry'),
                   ),
                 ],
               ),
             );
           }
 
+          // No data
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.memory,
-                    size: 64,
-                    color: colorScheme.tertiary,
-                  ),
+                  Icon(Icons.memory, size: 64, color: colorScheme.tertiary),
                   const SizedBox(height: 16),
                   const Text('No boards found'),
                 ],
@@ -142,15 +153,10 @@ class _BoardsState extends State<Boards> {
             );
           }
 
-          // Initialize filtered boards on first load
-          if (_allBoards.isEmpty) {
-            _allBoards = snapshot.data!;
-            _filteredBoards = snapshot.data!;
-          }
-
+          // Data loaded successfully
           return Column(
             children: [
-              // Search and filters section
+              // Search and filter bar
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -159,7 +165,10 @@ class _BoardsState extends State<Boards> {
                     // Search field
                     TextField(
                       controller: _searchController,
-                      onChanged: _updateSearch,
+                      onChanged: (value) {
+                        setState(() => _searchQuery = value);
+                        _applyFilters();
+                      },
                       decoration: InputDecoration(
                         hintText: 'Search boards...',
                         prefixIcon: const Icon(Icons.search),
@@ -168,7 +177,8 @@ class _BoardsState extends State<Boards> {
                                 icon: const Icon(Icons.clear),
                                 onPressed: () {
                                   _searchController.clear();
-                                  _updateSearch('');
+                                  setState(() => _searchQuery = '');
+                                  _applyFilters();
                                 },
                               )
                             : null,
@@ -183,38 +193,40 @@ class _BoardsState extends State<Boards> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Filter chips
+                    // Type filter and reset
                     Row(
                       children: [
-                        // Type filter
                         Expanded(
                           child: DropdownButton<String>(
                             value: _selectedType.isEmpty ? null : _selectedType,
-                            hint: const Text('Type'),
+                            hint: const Text('Filter by Type'),
                             isExpanded: true,
-                            items: ['', 'SBC', 'MC']
-                                .map((type) => DropdownMenuItem(
-                                      value: type.isEmpty ? '' : type,
-                                      child: Text(type.isEmpty ? 'All Types' : type),
-                                    ))
-                                .toList(),
-                            onChanged: _updateTypeFilter,
+                            items: const [
+                              DropdownMenuItem(
+                                value: '',
+                                child: Text('All Types'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'SBC',
+                                child: Text('SBC'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'MC',
+                                child: Text('Microcontroller'),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() => _selectedType = value ?? '');
+                              _applyFilters();
+                            },
                           ),
                         ),
                         const SizedBox(width: 8),
-
-                        // Reset filters button
-                        if (_selectedType.isNotEmpty ||
-                            _selectedCategory.isNotEmpty)
+                        if (_searchQuery.isNotEmpty || _selectedType.isNotEmpty)
                           IconButton(
                             icon: const Icon(Icons.refresh),
                             tooltip: 'Reset filters',
-                            onPressed: () {
-                              _searchController.clear();
-                              _updateSearch('');
-                              _updateTypeFilter(null);
-                              _updateCategoryFilter(null);
-                            },
+                            onPressed: _resetFilters,
                           ),
                       ],
                     ),
@@ -250,13 +262,18 @@ class _BoardsState extends State<Boards> {
                         ),
                       )
                     : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         itemCount: _filteredBoards.length,
                         itemBuilder: (context, index) {
-                          return BoardCard(
+                          return _BoardCard(
                             board: _filteredBoards[index],
                             onTap: () {
-                              context.push('/board/${_filteredBoards[index].id}');
+                              context.push(
+                                '/board/${_filteredBoards[index].id}',
+                              );
                             },
                           );
                         },
@@ -270,22 +287,12 @@ class _BoardsState extends State<Boards> {
   }
 }
 
-/// Board card widget for the list view
-class BoardCard extends StatefulWidget {
+class _BoardCard extends StatelessWidget {
   final Board board;
   final VoidCallback onTap;
 
-  const BoardCard({
-    required this.board,
-    required this.onTap,
-    super.key,
-  });
+  const _BoardCard({required this.board, required this.onTap});
 
-  @override
-  State<BoardCard> createState() => _BoardCardState();
-}
-
-class _BoardCardState extends State<BoardCard> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -293,158 +300,133 @@ class _BoardCardState extends State<BoardCard> {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: widget.onTap,
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Column(
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header row with image and type
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: SizedBox(
-                      width: 100,
-                      height: 100,
-                      child: widget.board.photoFrontId != null &&
-                              widget.board.photoFrontId!.isNotEmpty
-                          ? Image.network(
-                              widget.board.photoFrontId!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: const Icon(Icons.image_not_supported),
-                                );
-                              },
-                              loadingBuilder: (context, child, progress) {
-                                return Container(
-                                  color: colorScheme.surfaceContainerHighest,
-                                  child: progress == null
-                                      ? child
-                                      : const Center(
-                                          child: SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                        ),
-                                );
-                              },
-                            )
-                          : Container(
-                              color: colorScheme.surfaceContainerHighest,
-                              child: Icon(
-                                Icons.image,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+              // Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: _buildImage(board.photoFrontId, colorScheme),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Type chip
+                    Chip(
+                      label: Text(
+                        board.type,
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                      backgroundColor: colorScheme.tertiary.withOpacity(0.2),
+                      labelStyle: TextStyle(
+                        color: colorScheme.tertiary,
+                        fontSize: 11,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Name
+                    Text(
+                      board.name,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+
+                    // Description
+                    Text(
+                      board.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Categories
+                    if (board.category.isNotEmpty)
+                      Wrap(
+                        spacing: 4,
+                        runSpacing: 4,
+                        children: board.category.take(2).map((cat) {
+                          return Chip(
+                            label: Text(
+                              cat,
+                              style: const TextStyle(fontSize: 10),
                             ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-
-                  // Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Type badge
-                        Chip(
-                          label: Text(
-                            widget.board.type,
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          backgroundColor: colorScheme.tertiary.withOpacity(0.2),
-                          labelStyle: TextStyle(
-                            color: colorScheme.tertiary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        const SizedBox(height: 8),
-
-                        // Name
-                        Text(
-                          widget.board.name,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.primary,
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-
-                        // Description preview
-                        Text(
-                          widget.board.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Type icon
-                  Icon(
-                    widget.board.type == 'SBC'
-                        ? Icons.memory
-                        : Icons.developer_board,
-                    color: colorScheme.tertiary,
-                    size: 32,
-                  ),
-                ],
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            visualDensity: VisualDensity.compact,
+                          );
+                        }).toList(),
+                      ),
+                  ],
+                ),
               ),
 
-              const SizedBox(height: 12),
-
-              // Categories
-              if (widget.board.category.isNotEmpty)
-                Wrap(
-                  spacing: 4,
-                  runSpacing: 4,
-                  children: widget.board.category
-                      .take(3)
-                      .map(
-                        (cat) => Chip(
-                          label: Text(
-                            cat,
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      )
-                      .toList(),
-                ),
-
-              const SizedBox(height: 8),
-
-              // View details button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: widget.onTap,
-                  icon: const Icon(Icons.open_in_new, size: 18),
-                  label: const Text('View Details'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                ),
+              // Icon
+              Icon(
+                board.type == 'SBC' ? Icons.memory : Icons.developer_board,
+                color: colorScheme.tertiary,
+                size: 28,
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImage(String? imageUrl, ColorScheme colorScheme) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return Container(
+        color: colorScheme.surfaceContainerHighest,
+        child: Icon(Icons.image, color: colorScheme.onSurfaceVariant),
+      );
+    }
+
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, progress) {
+        return Container(
+          color: colorScheme.surfaceContainerHighest,
+          child: progress == null
+              ? child
+              : const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: colorScheme.surfaceContainerHighest,
+          child: const Icon(Icons.image_not_supported),
+        );
+      },
     );
   }
 }
