@@ -83,7 +83,18 @@ Create board (JSON body; requires `password` field for auth check):
 ```bash
 curl -X POST http://localhost:3030/api/v1/boards \
   -H "Content-Type: application/json" \
-  -d '{"name":"Test","type":"SBC","description":"Test board","password":"<crud-password>"}'
+  -d '{
+    "name": "Arduino Uno R3",
+    "slug": "arduino-uno-r3",
+    "type": "MC",
+    "category": ["Education", "Robotics", "Embedded"],
+    "bestFor": ["Beginners", "Students", "DIY Projects"],
+    "alternatives": ["Arduino Nano", "Arduino Mega", "ESP32"],
+    "description": "Arduino Uno R3 is one of the most beginner-friendly microcontroller boards...",
+    "photoFrontId": "Arduino Uno R3 board image",
+    "pinDiagramId": "Arduino Uno R3 pin diagram labeled",
+    "password": "<crud-password>"
+  }'
 ```
 
 Update board (provide `id` in URL and `password` in body):
@@ -108,11 +119,14 @@ curl -X DELETE http://localhost:3030/api/v1/boards/<id> \
 {
   "id": "uuid",
   "name": "Raspberry Pi 4 Model B",
+  "slug": "raspberry-pi-4-model-b",
   "type": "SBC",
-  "photoFront": "<drive-id-or-url>",
-  "photoBack": "<drive-id-or-url>",
-  "pinDiagram": "<drive-id-or-url>",
-  "description": "Board description",
+  "category": ["Linux", "Robotics", "Edge Computing"],
+  "bestFor": ["Linux Projects", "Robotics", "Home Servers"],
+  "alternatives": ["Orange Pi", "Jetson Nano", "ODROID"],
+  "description": "Full board description and key details...",
+  "photoFrontId": "<drive-id-or-url-or-descriptive-text>",
+  "pinDiagramId": "<drive-id-or-url-or-descriptive-text>",
   "createdAt": "ISO-8601 timestamp",
   "updatedAt": "ISO-8601 timestamp"
 }
@@ -131,30 +145,47 @@ curl -X DELETE http://localhost:3030/api/v1/boards/<id> \
 
 ## Getting Started
 
-Start Backend:
+### Start Backend:
 
 ```bash
 cd boardvault/backend
 bun dev
 ```
 
-Run Tests:
+### Seed Database with boards.json:
+
+Before running this, ensure:
+
+1. Backend is running (`bun dev`)
+2. `.env` has `CRUD_PASSWORD` set
+3. PostgreSQL databases are reachable (check DB_URL and IMG_URL)
+
+Then run the feed script:
 
 ```bash
 cd boardvault/backend
-bun run test-api.ts
+BASE=http://localhost:3030 CRUD_PASSWORD=<your-password> bun src/feedData.ts
 ```
 
-Verify API:
+The script will:
 
-```
-GET http://localhost:3030/api/v1/boards
-```
+- Read `boards.json`
+- Generate URL-friendly slugs from board names
+- POST each board to `/api/v1/boards`
+- Stop on the first error (prevents partial/duplicate seeding)
+- Report success/failure for each board
 
-Run Flutter App (example):
+### Run Tests:
 
 ```bash
-flutter run --dart-define=BACKEND_URL=http://localhost:3030
+cd boardvault/backend
+bun run test
+```
+
+### Verify API:
+
+```bash
+GET http://localhost:3030/api/v1/boards
 ```
 
 ## Troubleshooting

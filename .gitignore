@@ -39,6 +39,7 @@ bunCache/
 /coverage/
 boardvault-3d538d2e7750.json
 boards/
+boards.json
 
 # Local environment files and Android signing secrets
 .env

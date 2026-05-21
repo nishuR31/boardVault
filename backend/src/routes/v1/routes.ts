@@ -3,6 +3,7 @@ import { FastifyPluginAsync } from "fastify";
 import {
   create,
   deleteOne,
+  deleteAll,
   findOne,
   findById,
   findAll,
@@ -32,6 +33,9 @@ const routes: FastifyPluginAsync = async (app) => {
 
   // Delete
   app.delete("/boards/:id", { preHandler: requireCrudPassword }, deleteOne);
+
+  // Cleanup all (for testing only)
+  app.post("/boards-cleanup", { preHandler: requireCrudPassword }, deleteAll);
 };
 
 export default routes;

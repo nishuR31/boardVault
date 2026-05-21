@@ -10,22 +10,42 @@ const ALL_BOARDS_KEY = "boards:all";
 const BOARD_BY_NAME = (name: string) => `board:name:${name}`;
 const BOARD_BY_ID = (id: string) => `board:id:${id}`;
 
+// Helper to generate URL-friendly slug from name
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/[^\w-]/g, "") // Remove non-word characters except hyphens
+    .replace(/-+/g, "-") // Replace multiple hyphens with single hyphen
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+}
+
 export default class Service {
   async create(data: CreateBody, files?: Record<string, any>) {
     const { password, ...payload } = data;
+
+    // Generate slug from name if not provided
+    if (!payload.slug && payload.name) {
+      payload.slug = generateSlug(payload.name);
+    }
+
     // if files provided, upload them first and attach urls to payload
     try {
       if (files) {
         const uploadPics: Record<string, any> = {};
-        for (const key in Object.keys(files)) {
-          const uploaded = await this.uploadPic(files[key]);
+        for (const key of Object.keys(files)) {
+          const file = files[key];
+          const uploaded = await this.uploadPic(file);
           uploadPics[key] = uploaded;
           if (!uploadPics[key]) continue;
         }
 
         // map known keys to payload fields
-        if (uploadPics.photoFront) payload.photoFront = uploadPics.photoFront;
-        if (uploadPics.pinDiagram) payload.pinDiagram = uploadPics.pinDiagram;
+        if (uploadPics.photoFront) payload.photoFrontId = uploadPics.photoFront;
+        if (uploadPics.photoFrontId) payload.photoFrontId = uploadPics.photoFrontId;
+        if (uploadPics.pinDiagram) payload.pinDiagramId = uploadPics.pinDiagram;
+        if (uploadPics.pinDiagramId) payload.pinDiagramId = uploadPics.pinDiagramId;
       }
     } catch (e) {
       // don't fail cache logic; propagate after trying to create record
@@ -92,27 +112,67 @@ export default class Service {
     return deleted;
   }
 
+  async deleteAll() {
+    const deleted = await boardRepo.deleteAll();
+    void del(ALL_BOARDS_KEY).catch(() => {
+      // ignore cache errors
+    });
+    return deleted;
+  }
+
   async uploadPic(file: any) {
-    try {
-      if (
-        file &&
-        file.mimetype &&
-        typeof file.mimetype === "string" &&
-        file.mimetype.startsWith("image/")
-      ) {
-        // compress image stream or buffer
-        const compressed = await compressImage(file.file, file.mimetype);
-        file.file = bufferToStream(compressed);
-        // normalize to jpeg for lossy compression when appropriate
-        if (!/png/i.test(file.mimetype)) {
-          file.mimetype = "image/jpeg";
-        }
+    // Normalize many input formats: data URI string, { base64, mimetype, filename }, { file: Buffer|Stream, mimetype, filename }
+    let name = file?.filename || file?.name || "upload";
+    let mime = file?.mimetype || "image/jpeg";
+    let inputBuffer: Buffer | null = null;
+
+    // data URI
+    if (typeof file === "string" && file.startsWith("data:")) {
+      const m = file.match(/^data:([^;]+);base64,(.*)$/);
+      if (m) {
+        mime = m[1];
+        inputBuffer = Buffer.from(m[2], "base64");
       }
-    } catch (e) {
-      // if compression fails, proceed with original file
     }
 
-    const { id } = await boardRepo.upload(file);
+    // object with base64
+    if (!inputBuffer && file && typeof file === "object" && file.base64) {
+      mime = file.mimetype || mime;
+      inputBuffer = Buffer.from(file.base64, "base64");
+    }
+
+    // file.file could be Buffer or stream
+    if (!inputBuffer && file && typeof file === "object" && file.file) {
+      if (Buffer.isBuffer(file.file)) {
+        inputBuffer = file.file;
+      } else if (file.file.readable) {
+        // stream -> buffer
+        inputBuffer = await new Promise<Buffer>((resolve, reject) => {
+          const chunks: Buffer[] = [];
+          file.file.on("data", (c: Buffer) => chunks.push(Buffer.from(c)));
+          file.file.on("end", () => resolve(Buffer.concat(chunks)));
+          file.file.on("error", (err: any) => reject(err));
+        });
+      }
+    }
+
+    // If we have a buffer, try to compress
+    if (inputBuffer) {
+      try {
+        const compressed = await compressImage(inputBuffer, mime);
+        inputBuffer = compressed;
+        // normalize
+        if (!/png/i.test(mime)) mime = "image/jpeg";
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Prepare prisma payload
+    const data: any = { name };
+    if (inputBuffer) data.data = inputBuffer;
+
+    const { id } = await boardRepo.upload(data);
     return id;
   }
 }

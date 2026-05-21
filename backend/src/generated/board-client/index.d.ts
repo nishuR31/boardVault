@@ -886,6 +886,7 @@ export namespace Prisma {
   export type BoardMinAggregateOutputType = {
     id: string | null
     name: string | null
+    slug: string | null
     type: $Enums.BoardType | null
     description: string | null
     photoFrontId: string | null
@@ -897,6 +898,7 @@ export namespace Prisma {
   export type BoardMaxAggregateOutputType = {
     id: string | null
     name: string | null
+    slug: string | null
     type: $Enums.BoardType | null
     description: string | null
     photoFrontId: string | null
@@ -908,8 +910,12 @@ export namespace Prisma {
   export type BoardCountAggregateOutputType = {
     id: number
     name: number
+    slug: number
     type: number
     description: number
+    category: number
+    bestFor: number
+    alternatives: number
     photoFrontId: number
     pinDiagramId: number
     createdAt: number
@@ -921,6 +927,7 @@ export namespace Prisma {
   export type BoardMinAggregateInputType = {
     id?: true
     name?: true
+    slug?: true
     type?: true
     description?: true
     photoFrontId?: true
@@ -932,6 +939,7 @@ export namespace Prisma {
   export type BoardMaxAggregateInputType = {
     id?: true
     name?: true
+    slug?: true
     type?: true
     description?: true
     photoFrontId?: true
@@ -943,8 +951,12 @@ export namespace Prisma {
   export type BoardCountAggregateInputType = {
     id?: true
     name?: true
+    slug?: true
     type?: true
     description?: true
+    category?: true
+    bestFor?: true
+    alternatives?: true
     photoFrontId?: true
     pinDiagramId?: true
     createdAt?: true
@@ -1027,8 +1039,12 @@ export namespace Prisma {
   export type BoardGroupByOutputType = {
     id: string
     name: string
+    slug: string
     type: $Enums.BoardType
-    description: string | null
+    description: string
+    category: string[]
+    bestFor: string[]
+    alternatives: string[]
     photoFrontId: string | null
     pinDiagramId: string | null
     createdAt: Date
@@ -1055,8 +1071,12 @@ export namespace Prisma {
   export type BoardSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    slug?: boolean
     type?: boolean
     description?: boolean
+    category?: boolean
+    bestFor?: boolean
+    alternatives?: boolean
     photoFrontId?: boolean
     pinDiagramId?: boolean
     createdAt?: boolean
@@ -1066,8 +1086,12 @@ export namespace Prisma {
   export type BoardSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    slug?: boolean
     type?: boolean
     description?: boolean
+    category?: boolean
+    bestFor?: boolean
+    alternatives?: boolean
     photoFrontId?: boolean
     pinDiagramId?: boolean
     createdAt?: boolean
@@ -1077,8 +1101,12 @@ export namespace Prisma {
   export type BoardSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     name?: boolean
+    slug?: boolean
     type?: boolean
     description?: boolean
+    category?: boolean
+    bestFor?: boolean
+    alternatives?: boolean
     photoFrontId?: boolean
     pinDiagramId?: boolean
     createdAt?: boolean
@@ -1088,15 +1116,19 @@ export namespace Prisma {
   export type BoardSelectScalar = {
     id?: boolean
     name?: boolean
+    slug?: boolean
     type?: boolean
     description?: boolean
+    category?: boolean
+    bestFor?: boolean
+    alternatives?: boolean
     photoFrontId?: boolean
     pinDiagramId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "type" | "description" | "photoFrontId" | "pinDiagramId" | "createdAt" | "updatedAt", ExtArgs["result"]["board"]>
+  export type BoardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "slug" | "type" | "description" | "category" | "bestFor" | "alternatives" | "photoFrontId" | "pinDiagramId" | "createdAt" | "updatedAt", ExtArgs["result"]["board"]>
 
   export type $BoardPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Board"
@@ -1104,8 +1136,12 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       name: string
+      slug: string
       type: $Enums.BoardType
-      description: string | null
+      description: string
+      category: string[]
+      bestFor: string[]
+      alternatives: string[]
       photoFrontId: string | null
       pinDiagramId: string | null
       createdAt: Date
@@ -1535,8 +1571,12 @@ export namespace Prisma {
   interface BoardFieldRefs {
     readonly id: FieldRef<"Board", 'String'>
     readonly name: FieldRef<"Board", 'String'>
+    readonly slug: FieldRef<"Board", 'String'>
     readonly type: FieldRef<"Board", 'BoardType'>
     readonly description: FieldRef<"Board", 'String'>
+    readonly category: FieldRef<"Board", 'String[]'>
+    readonly bestFor: FieldRef<"Board", 'String[]'>
+    readonly alternatives: FieldRef<"Board", 'String[]'>
     readonly photoFrontId: FieldRef<"Board", 'String'>
     readonly pinDiagramId: FieldRef<"Board", 'String'>
     readonly createdAt: FieldRef<"Board", 'DateTime'>
@@ -1924,8 +1964,12 @@ export namespace Prisma {
   export const BoardScalarFieldEnum: {
     id: 'id',
     name: 'name',
+    slug: 'slug',
     type: 'type',
     description: 'description',
+    category: 'category',
+    bestFor: 'bestFor',
+    alternatives: 'alternatives',
     photoFrontId: 'photoFrontId',
     pinDiagramId: 'pinDiagramId',
     createdAt: 'createdAt',
@@ -2029,8 +2073,12 @@ export namespace Prisma {
     NOT?: BoardWhereInput | BoardWhereInput[]
     id?: StringFilter<"Board"> | string
     name?: StringFilter<"Board"> | string
+    slug?: StringFilter<"Board"> | string
     type?: EnumBoardTypeFilter<"Board"> | $Enums.BoardType
-    description?: StringNullableFilter<"Board"> | string | null
+    description?: StringFilter<"Board"> | string
+    category?: StringNullableListFilter<"Board">
+    bestFor?: StringNullableListFilter<"Board">
+    alternatives?: StringNullableListFilter<"Board">
     photoFrontId?: StringNullableFilter<"Board"> | string | null
     pinDiagramId?: StringNullableFilter<"Board"> | string | null
     createdAt?: DateTimeFilter<"Board"> | Date | string
@@ -2040,8 +2088,12 @@ export namespace Prisma {
   export type BoardOrderByWithRelationInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
     type?: SortOrder
-    description?: SortOrderInput | SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    bestFor?: SortOrder
+    alternatives?: SortOrder
     photoFrontId?: SortOrderInput | SortOrder
     pinDiagramId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -2051,22 +2103,30 @@ export namespace Prisma {
   export type BoardWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     name?: string
+    slug?: string
     AND?: BoardWhereInput | BoardWhereInput[]
     OR?: BoardWhereInput[]
     NOT?: BoardWhereInput | BoardWhereInput[]
     type?: EnumBoardTypeFilter<"Board"> | $Enums.BoardType
-    description?: StringNullableFilter<"Board"> | string | null
+    description?: StringFilter<"Board"> | string
+    category?: StringNullableListFilter<"Board">
+    bestFor?: StringNullableListFilter<"Board">
+    alternatives?: StringNullableListFilter<"Board">
     photoFrontId?: StringNullableFilter<"Board"> | string | null
     pinDiagramId?: StringNullableFilter<"Board"> | string | null
     createdAt?: DateTimeFilter<"Board"> | Date | string
     updatedAt?: DateTimeFilter<"Board"> | Date | string
-  }, "id" | "name">
+  }, "id" | "name" | "slug">
 
   export type BoardOrderByWithAggregationInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
     type?: SortOrder
-    description?: SortOrderInput | SortOrder
+    description?: SortOrder
+    category?: SortOrder
+    bestFor?: SortOrder
+    alternatives?: SortOrder
     photoFrontId?: SortOrderInput | SortOrder
     pinDiagramId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -2082,8 +2142,12 @@ export namespace Prisma {
     NOT?: BoardScalarWhereWithAggregatesInput | BoardScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Board"> | string
     name?: StringWithAggregatesFilter<"Board"> | string
+    slug?: StringWithAggregatesFilter<"Board"> | string
     type?: EnumBoardTypeWithAggregatesFilter<"Board"> | $Enums.BoardType
-    description?: StringNullableWithAggregatesFilter<"Board"> | string | null
+    description?: StringWithAggregatesFilter<"Board"> | string
+    category?: StringNullableListFilter<"Board">
+    bestFor?: StringNullableListFilter<"Board">
+    alternatives?: StringNullableListFilter<"Board">
     photoFrontId?: StringNullableWithAggregatesFilter<"Board"> | string | null
     pinDiagramId?: StringNullableWithAggregatesFilter<"Board"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Board"> | Date | string
@@ -2093,8 +2157,12 @@ export namespace Prisma {
   export type BoardCreateInput = {
     id?: string
     name: string
+    slug: string
     type: $Enums.BoardType
-    description?: string | null
+    description: string
+    category?: BoardCreatecategoryInput | string[]
+    bestFor?: BoardCreatebestForInput | string[]
+    alternatives?: BoardCreatealternativesInput | string[]
     photoFrontId?: string | null
     pinDiagramId?: string | null
     createdAt?: Date | string
@@ -2104,8 +2172,12 @@ export namespace Prisma {
   export type BoardUncheckedCreateInput = {
     id?: string
     name: string
+    slug: string
     type: $Enums.BoardType
-    description?: string | null
+    description: string
+    category?: BoardCreatecategoryInput | string[]
+    bestFor?: BoardCreatebestForInput | string[]
+    alternatives?: BoardCreatealternativesInput | string[]
     photoFrontId?: string | null
     pinDiagramId?: string | null
     createdAt?: Date | string
@@ -2115,8 +2187,12 @@ export namespace Prisma {
   export type BoardUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
-    description?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    category?: BoardUpdatecategoryInput | string[]
+    bestFor?: BoardUpdatebestForInput | string[]
+    alternatives?: BoardUpdatealternativesInput | string[]
     photoFrontId?: NullableStringFieldUpdateOperationsInput | string | null
     pinDiagramId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2126,8 +2202,12 @@ export namespace Prisma {
   export type BoardUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
-    description?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    category?: BoardUpdatecategoryInput | string[]
+    bestFor?: BoardUpdatebestForInput | string[]
+    alternatives?: BoardUpdatealternativesInput | string[]
     photoFrontId?: NullableStringFieldUpdateOperationsInput | string | null
     pinDiagramId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2137,8 +2217,12 @@ export namespace Prisma {
   export type BoardCreateManyInput = {
     id?: string
     name: string
+    slug: string
     type: $Enums.BoardType
-    description?: string | null
+    description: string
+    category?: BoardCreatecategoryInput | string[]
+    bestFor?: BoardCreatebestForInput | string[]
+    alternatives?: BoardCreatealternativesInput | string[]
     photoFrontId?: string | null
     pinDiagramId?: string | null
     createdAt?: Date | string
@@ -2148,8 +2232,12 @@ export namespace Prisma {
   export type BoardUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
-    description?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    category?: BoardUpdatecategoryInput | string[]
+    bestFor?: BoardUpdatebestForInput | string[]
+    alternatives?: BoardUpdatealternativesInput | string[]
     photoFrontId?: NullableStringFieldUpdateOperationsInput | string | null
     pinDiagramId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2159,8 +2247,12 @@ export namespace Prisma {
   export type BoardUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
     type?: EnumBoardTypeFieldUpdateOperationsInput | $Enums.BoardType
-    description?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: StringFieldUpdateOperationsInput | string
+    category?: BoardUpdatecategoryInput | string[]
+    bestFor?: BoardUpdatebestForInput | string[]
+    alternatives?: BoardUpdatealternativesInput | string[]
     photoFrontId?: NullableStringFieldUpdateOperationsInput | string | null
     pinDiagramId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -2187,6 +2279,14 @@ export namespace Prisma {
     in?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
     notIn?: $Enums.BoardType[] | ListEnumBoardTypeFieldRefInput<$PrismaModel>
     not?: NestedEnumBoardTypeFilter<$PrismaModel> | $Enums.BoardType
+  }
+
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
   }
 
   export type StringNullableFilter<$PrismaModel = never> = {
@@ -2223,8 +2323,12 @@ export namespace Prisma {
   export type BoardCountOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
     type?: SortOrder
     description?: SortOrder
+    category?: SortOrder
+    bestFor?: SortOrder
+    alternatives?: SortOrder
     photoFrontId?: SortOrder
     pinDiagramId?: SortOrder
     createdAt?: SortOrder
@@ -2234,6 +2338,7 @@ export namespace Prisma {
   export type BoardMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
     type?: SortOrder
     description?: SortOrder
     photoFrontId?: SortOrder
@@ -2245,6 +2350,7 @@ export namespace Prisma {
   export type BoardMinOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
+    slug?: SortOrder
     type?: SortOrder
     description?: SortOrder
     photoFrontId?: SortOrder
@@ -2313,12 +2419,39 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type BoardCreatecategoryInput = {
+    set: string[]
+  }
+
+  export type BoardCreatebestForInput = {
+    set: string[]
+  }
+
+  export type BoardCreatealternativesInput = {
+    set: string[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
 
   export type EnumBoardTypeFieldUpdateOperationsInput = {
     set?: $Enums.BoardType
+  }
+
+  export type BoardUpdatecategoryInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type BoardUpdatebestForInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type BoardUpdatealternativesInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type NullableStringFieldUpdateOperationsInput = {

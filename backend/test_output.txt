@@ -1,0 +1,149 @@
+$ bun run test/run-test.ts
+Running smoke tests against http://localhost:3030
+
+checking for server: 
+✅ PASS: root / -> http://localhost:3030/
+✅ PASS: /health -> http://localhost:3030/health
+✅ PASS: /ping (root) -> http://localhost:3030/ping
+✅ PASS: /help -> http://localhost:3030/help
+✅ PASS: /today -> http://localhost:3030/today
+✅ PASS: /api/v1/ping -> http://localhost:3030/api/v1/ping
+✅ PASS: /api/v1/boards (list) -> http://localhost:3030/api/v1/boards
+
+Cleaning up existing boards before test...
+⚠ Cleanup endpoint not available (optional)
+
+Running DB flow tests for boards defined in boards.json...
+
+-- Testing board: Arduino Uno R3
+  [POST] Sending board: Arduino Uno R3...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: ESP32 DevKit V1
+  [POST] Sending board: ESP32 DevKit V1...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: STM32F103C8T6 Blue Pill
+  [POST] Sending board: STM32F103C8T6 Blue Pill...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: ATmega328P Microcontroller
+  [POST] Sending board: ATmega328P Microcontroller...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: PIC16F877A
+  [POST] Sending board: PIC16F877A...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: Raspberry Pi 4 Model B
+  [POST] Sending board: Raspberry Pi 4 Model B...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: BeagleBone Black Rev C
+  [POST] Sending board: BeagleBone Black Rev C...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: NVIDIA Jetson Nano Developer Kit
+  [POST] Sending board: NVIDIA Jetson Nano Developer Kit...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: Orange Pi PC
+  [POST] Sending board: Orange Pi PC...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+-- Testing board: ASUS Tinker Board S
+  [POST] Sending board: ASUS Tinker Board S...
+  [POST] Response status: 401
+❌ FAIL: create board -> status 401 body {
+  success: false,
+  message: "Invalid password",
+  errors: {
+    name: "UnauthorizedError",
+    stack: "UnauthorizedError: Invalid password\n    at requireCrudPassword (A:\\code\\boardvault\\backend\\src\\middlewares\\auth.ts:36:15)\n    at next (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:242:18)\n    at hookRunner (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\hooks.js:264:5)\n    at validationCompleted (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:117:5)\n    at preValidationCallback (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:101:5)\n    at handler (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\handle-request.js:78:7)\n    at onDone (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:229:5)\n    at runInAsyncScope (node:async_hooks:137:23)\n    at defaultJsonParser (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:317:7)\n    at onEnd (A:\\code\\boardvault\\backend\\node_modules\\fastify\\lib\\content-type-parser.js:299:27)\n    at emit (node:events:92:22)\n    at endReadableNT (internal:streams/readable:861:50)\n    at processTicksAndRejections (native:7:39)",
+    details: {},
+  },
+}
+
+Some tests failed.
+error: script "test" exited with code 1

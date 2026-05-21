@@ -25,14 +25,65 @@ type UpdateRequest = FastifyRequest<{
 
 export const create = asyncHandler(
   async (req: CreateRequest, res: FastifyReply): Promise<any> => {
-    // collect multipart files (photoFront, photoBack, pinDiagram) if any
-    const files: Record<string, any> = {};
-    // folderId may come in body for Drive destination
-    const { photoFront, pinDiagram, ...payload } = req.body as any;
-    files[photoFront] = photoFront;
-    files[pinDiagram] = pinDiagram;
+    // Accept either JSON body with inline file objects or multipart uploads (best-effort).
+    const rawBody = (req.body || {}) as any;
 
-    const result = await service.create(payload, files);
+    // If request is multipart/form-data, try to parse parts (files + fields)
+    let payload: any = {};
+    const files: Record<string, any> = {};
+
+    const contentType = (req.headers && (req.headers["content-type"] || "")).toString();
+    if (contentType.includes("multipart/form-data") && (req as any).parts) {
+      // consume parts async
+      for await (const part of (req as any).parts()) {
+        if (part.file) {
+          // collect stream into buffer
+          const chunks: Buffer[] = [];
+          for await (const chunk of part.file) chunks.push(Buffer.from(chunk));
+          files[part.fieldname] = {
+            file: Buffer.concat(chunks),
+            mimetype: part.mimetype,
+            filename: part.filename,
+          };
+        } else {
+          payload[part.fieldname] = part.value;
+        }
+      }
+    } else {
+      // fallback: extract potential file fields from JSON body
+      payload = { ...rawBody };
+      const fileFields = [
+        "photoFront",
+        "photoFrontId",
+        "pinDiagram",
+        "pinDiagramId",
+        "photo",
+      ];
+      for (const f of fileFields) {
+        if (payload[f]) {
+          files[f] = payload[f];
+          delete payload[f];
+        }
+      }
+
+      // Map 'photo' to 'photoFrontId' if it exists in files
+      if (files.photo && !files.photoFrontId) {
+        files.photoFrontId = files.photo;
+        delete files.photo;
+      }
+    }
+
+    // Remove password from payload (middleware already validated it)
+    const { password, ...rest } = payload;
+
+    console.info(
+      "[controller.create] received payload keys:",
+      Object.keys(rest),
+      "file keys:",
+      Object.keys(files),
+    );
+    const result = await service.create(rest, files);
+    console.info("[controller.create] service.create returned:", result && result.id);
     sendSuccess(res, "Data successfully added", STATUS_CODES.CREATED, result);
   },
 );
@@ -63,6 +114,11 @@ export const update = asyncHandler(async (req: UpdateRequest, res: FastifyReply)
   const { id } = req.params;
   const result = await service.update(id, req.body);
   sendSuccess(res, "Data updated successfully", STATUS_CODES.OK, result);
+});
+
+export const deleteAll = asyncHandler(async (req: FastifyRequest, res: FastifyReply) => {
+  const result = await service.deleteAll();
+  sendSuccess(res, `Deleted ${result} boards`, STATUS_CODES.OK, { deleted: result });
 });
 
 export const ping = asyncHandler(async (req: FastifyRequest, res: FastifyReply) => {

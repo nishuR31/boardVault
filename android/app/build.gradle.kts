@@ -71,7 +71,7 @@ android {
 
     buildTypes {
         release {
-            debuggable = false
+            // debuggable = false
             // Prefer properties from android/key.properties when present,
             // otherwise fall back to environment-style keys read from .env
             val keystoreFileName = keystoreProperties.getProperty("storeFile")

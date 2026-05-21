@@ -17,6 +17,13 @@ import {
  * Handle Prisma errors consistently across both clients
  */
 function handlePrismaError(error: any, dataModelName: string, operation: string): never {
+  // Log the full error for debugging
+  console.error(`[PRISMA ERROR] ${operation} ${dataModelName}:`, {
+    message: error?.message,
+    code: error?.code,
+    meta: error?.meta,
+  });
+
   // Check for known Prisma error codes
   if (error?.code) {
     if (error.code === "P2025") {
@@ -170,6 +177,18 @@ export default class BaseRepository<T = any> {
       return true;
     } catch (error) {
       handlePrismaError(error, this.dataModelName, "deleting");
+    }
+  }
+
+  /**
+   * Delete all records (use with caution; primarily for testing cleanup)
+   */
+  async deleteAll(): Promise<number> {
+    try {
+      const result = await this.dataModel.deleteMany({});
+      return result.count;
+    } catch (error) {
+      handlePrismaError(error, this.dataModelName, "deleting all");
     }
   }
 }

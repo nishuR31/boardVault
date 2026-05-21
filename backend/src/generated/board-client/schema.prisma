@@ -22,18 +22,27 @@ enum BoardType {
 }
 
 model Board {
-  id   String    @id @default(uuid())
-  name String    @unique
+  id String @id @default(uuid())
+
+  name String @unique
+  slug String @unique
+
   type BoardType
 
-  description  String? @default("Will be updated soon...")
-  photoFrontId String? @default("Will be updated soon...")
-  pinDiagramId String? @default("Will be updated soon...")
+  description String
+
+  category     String[]
+  bestFor      String[]
+  alternatives String[]
+
+  photoFrontId String?
+  pinDiagramId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([name])
+  @@index([slug])
   @@index([type])
   @@map("boards")
 }

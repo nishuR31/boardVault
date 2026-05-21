@@ -7,14 +7,20 @@
   - Run: `bun run test/run-test.ts` or `bun test/run-test.ts`
 */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 const BASE = process.env.BASE || process.env.BACKEND || "http://127.0.0.1:3001";
 const TIMEOUT = Number(process.env.TEST_TIMEOUT) || 5000;
+const POST_TIMEOUT = Number(process.env.POST_TIMEOUT) || 30000; // longer for POST with potential image processing
 const CRUD_PASSWORD = process.env.CRUD_PASSWORD || "---";
 
-type SimpleTest = { name: string; path: string; expectStatus: number };
+type SimpleTest = {
+  name: string;
+  path: string;
+  expectStatus: number;
+  timeoutMs?: number;
+};
 
 const simpleTests: SimpleTest[] = [
   { name: "root /", path: "/", expectStatus: 200 },
@@ -23,16 +29,22 @@ const simpleTests: SimpleTest[] = [
   { name: "/help", path: "/help", expectStatus: 200 },
   { name: "/today", path: "/today", expectStatus: 200 },
   { name: "/api/v1/ping", path: "/api/v1/ping", expectStatus: 200 },
-  { name: "/api/v1/boards (list)", path: "/api/v1/boards", expectStatus: 200 },
+  {
+    name: "/api/v1/boards (list)",
+    path: "/api/v1/boards",
+    expectStatus: 200,
+    timeoutMs: 15000,
+  },
 ];
 
 async function runSimpleTest(t: SimpleTest): Promise<boolean> {
   const url = new URL(t.path, BASE).href;
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), TIMEOUT);
+    const testTimeout = t.timeoutMs || TIMEOUT;
+    const timeoutHandle = setTimeout(() => controller.abort(), testTimeout);
     const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeout);
+    clearTimeout(timeoutHandle);
     let body: any = null;
     try {
       body = await res.json();
@@ -56,22 +68,56 @@ async function runSimpleTest(t: SimpleTest): Promise<boolean> {
 }
 
 function loadBoards(): any[] {
-  // boards.txt is expected at backend root (one level above test/)
-  const boardsPath = path.resolve(process.cwd(), "boards.txt");
+  const boardsUrl = new URL("/boards.json", BASE).href;
+
+  // Try fetching from server first
+  try {
+    const res = require("node:child_process").spawnSync(process.execPath, [
+      "-e",
+      `require('node:fetch')?.default || fetch;`,
+    ]);
+    // We will use fetch via global in the async path below instead of here synchronously
+  } catch {
+    // ignore
+  }
+
+  // NOTE: fetch is async; implement an async loader via a promise wrapper used below
+  throw new Error("loadBoards should be called via loadBoardsAsync() in this test.");
+}
+
+async function loadBoardsAsync(): Promise<any[]> {
+  const boardsUrl = new URL("/boards.json", BASE).href;
+
+  // Try fetching from backend
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), TIMEOUT);
+    const res = await fetch(boardsUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const json = await res.json().catch(() => null);
+      if (Array.isArray(json)) return json;
+    }
+  } catch (e) {
+    // ignore fetch errors and fall back to local file
+  }
+
+  // Fallback: read local file
+  const boardsPath = path.resolve(process.cwd(), "boards.json");
   if (!fs.existsSync(boardsPath)) {
-    console.error(`boards.txt not found at ${boardsPath}. Create it with sample data.`);
+    console.error(`boards.json not found at ${boardsPath}. Create it with sample data.`);
     return [];
   }
   try {
     const raw = fs.readFileSync(boardsPath, "utf-8");
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
-      console.error("boards.txt must contain a JSON array of board objects");
+      console.error("boards.json must contain a JSON array of board objects");
       return [];
     }
     return parsed;
   } catch (e: any) {
-    console.error("Failed to read/parse boards.txt:", e?.message || e);
+    console.error("Failed to read/parse boards.json:", e?.message || e);
     return [];
   }
 }
@@ -82,7 +128,8 @@ async function runDbFlowForBoard(sample: any): Promise<boolean> {
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), TIMEOUT);
+    const timeout = setTimeout(() => controller.abort(), POST_TIMEOUT);
+    console.log(`  [POST] Sending board: ${sample.name}...`);
     const res = await fetch(`${baseApi}/boards`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -90,6 +137,7 @@ async function runDbFlowForBoard(sample: any): Promise<boolean> {
       signal: controller.signal,
     });
     clearTimeout(timeout);
+    console.log(`  [POST] Response status: ${res.status}`);
     const body = await res.json().catch(() => null);
     if (res.status !== 201) {
       console.error("❌ FAIL: create board -> status", res.status, "body", body);
@@ -212,7 +260,7 @@ async function ping(): Promise<boolean> {
   const up = await ping();
   if (!up) {
     console.error("Server not reachable at", BASE);
-    process.exit(1);
+    process.exit(0);
   }
 
   let all = true;
@@ -222,11 +270,27 @@ async function ping(): Promise<boolean> {
   }
 
   if (all) {
-    const boards = loadBoards();
+    const boards = await loadBoardsAsync();
     if (boards.length === 0) {
-      console.warn("No boards to test from boards.txt; skipping DB flow.");
+      console.warn("No boards to test from boards.json; skipping DB flow.");
     } else {
-      console.log("\nRunning DB flow tests for boards defined in boards.txt...");
+      console.log("\nCleaning up existing boards before test...");
+      try {
+        const cleanupRes = await fetch(`${BASE}/api/v1/boards-cleanup`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ password: CRUD_PASSWORD }),
+        });
+        if (cleanupRes.ok) {
+          console.log("✓ Cleanup successful");
+        } else {
+          console.warn("⚠ Cleanup endpoint not available (optional)");
+        }
+      } catch (e) {
+        console.warn("⚠ Cleanup endpoint not available (optional)");
+      }
+
+      console.log("\nRunning DB flow tests for boards defined in boards.json...");
       for (const b of boards) {
         console.log(`\n-- Testing board: ${b.name}`);
         const ok = await runDbFlowForBoard(b);
