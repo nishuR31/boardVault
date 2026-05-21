@@ -5,6 +5,7 @@ dotenv.config();
 export const PORT = Number(process.env.PORT) || 3001;
 export const BACKEND =
   process.env.BACKEND || `http://127.0.0.1:${Number(process.env.PORT) || 3001}`;
+export const FRONTEND = process.env.FRONTEND || "";
 
 export const DATABASE_URL = process.env.DB_URL;
 export const IMAGE_DATABASE_URL = process.env.IMG_URL;

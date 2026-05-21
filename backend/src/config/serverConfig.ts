@@ -15,10 +15,52 @@ import {
   NODE_ENV,
   PORT,
   BACKEND,
+  FRONTEND,
 } from "./envConfig";
 
 let fastifyApp = fastify({ logger: true, exposeHeadRoutes: true });
-fastifyApp.register(cors, { origin: true });
+
+const allowedOrigins = new Set<string>([
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3030",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+  "http://127.0.0.1:3030",
+]);
+
+if (FRONTEND) {
+  FRONTEND.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .forEach((origin) => allowedOrigins.add(origin));
+}
+
+if (BACKEND) {
+  try {
+    const backendUrl = new URL(BACKEND);
+    allowedOrigins.add(`${backendUrl.protocol}//${backendUrl.host}`);
+  } catch {
+    // ignore invalid backend URLs
+  }
+}
+
+fastifyApp.register(cors, {
+  origin: (origin, cb) => {
+    if (!origin) {
+      cb(null, true);
+      return;
+    }
+
+    if (allowedOrigins.has(origin)) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error(`CORS blocked for origin: ${origin}`), false);
+  },
+  credentials: true,
+});
 // Allow larger multipart uploads (5 MB per file) for image uploads
 fastifyApp.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } });
 const rateLimitWindow = RATE_LIMIT_WINDOW_SECONDS;
