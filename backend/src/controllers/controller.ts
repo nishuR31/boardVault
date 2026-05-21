@@ -45,13 +45,7 @@ async function parseBoardPayload(req: FastifyRequest) {
     }
   } else {
     payload = { ...rawBody };
-    const fileFields = [
-      "photoFront",
-      "photoFrontId",
-      "pinDiagram",
-      "pinDiagramId",
-      "photo",
-    ];
+    const fileFields = ["photoFront", "pinDiagram"];
     for (const field of fileFields) {
       if (payload[field]) {
         files[field] = payload[field];
@@ -59,8 +53,8 @@ async function parseBoardPayload(req: FastifyRequest) {
       }
     }
 
-    if (files.photo && !files.photoFrontId) {
-      files.photoFrontId = files.photo;
+    if (files.photo && !files.photoFront) {
+      files.photoFront = files.photo;
       delete files.photo;
     }
   }
@@ -78,7 +72,7 @@ async function parseBoardPayload(req: FastifyRequest) {
     }
   }
 
-  const fileFieldsFromPayload = ["photoFront", "pinDiagram", "photo"];
+  const fileFieldsFromPayload = ["photoFront", "pinDiagram"];
   for (const field of fileFieldsFromPayload) {
     if (payload[field]) {
       files[field] = payload[field];

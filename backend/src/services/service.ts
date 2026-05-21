@@ -3,6 +3,7 @@ import { CreateBody, UpdateBody } from "../types";
 import { NotFoundError } from "../utils/errors/error";
 import { getOrSet, del, set } from "../utils/cache/cache";
 import { compressImage, bufferToStream } from "../utils/imageCompress";
+import { BACKEND } from "../config/envConfig";
 
 const boardRepo = new BoardRepository();
 
@@ -41,11 +42,9 @@ export default class Service {
           if (!uploadPics[key]) continue;
         }
 
-        // map known keys to payload fields
+        // map known keys to payload fields (store full URLs)
         if (uploadPics.photoFront) payload.photoFrontId = uploadPics.photoFront;
-        if (uploadPics.photoFrontId) payload.photoFrontId = uploadPics.photoFrontId;
         if (uploadPics.pinDiagram) payload.pinDiagramId = uploadPics.pinDiagram;
-        if (uploadPics.pinDiagramId) payload.pinDiagramId = uploadPics.pinDiagramId;
       }
     } catch (e) {
       // don't fail cache logic; propagate after trying to create record
@@ -66,10 +65,10 @@ export default class Service {
     }
 
     // Remove any stray file objects that might have slipped into payload
-    if (payloadAny.photoFrontId && typeof payloadAny.photoFrontId === "object")
-      delete payloadAny.photoFrontId;
-    if (payloadAny.pinDiagramId && typeof payloadAny.pinDiagramId === "object")
-      delete payloadAny.pinDiagramId;
+    if (payloadAny.photoFront && typeof payloadAny.photoFront === "object")
+      delete payloadAny.photoFront;
+    if (payloadAny.pinDiagram && typeof payloadAny.pinDiagram === "object")
+      delete payloadAny.pinDiagram;
 
     const created = await boardRepo.create(payload);
     void Promise.all([
@@ -141,10 +140,10 @@ export default class Service {
       }
     }
 
-    if (payloadAny.photoFront && typeof payloadAny.photoFront === "object")
-      delete payloadAny.photoFront;
-    if (payloadAny.pinDiagram && typeof payloadAny.pinDiagram === "object")
-      delete payloadAny.pinDiagram;
+    if (payloadAny.photoFrontId && typeof payloadAny.photoFrontId === "object")
+      delete payloadAny.photoFrontId;
+    if (payloadAny.pinDiagramId && typeof payloadAny.pinDiagramId === "object")
+      delete payloadAny.pinDiagramId;
 
     const updated = await boardRepo.update(board.id, payload);
 
@@ -234,6 +233,7 @@ export default class Service {
     else if (typeof file === "string") data.data = Buffer.from(file);
 
     const { id } = await boardRepo.upload(data);
-    return id;
+    // Return full image URL instead of just ID
+    return `${BACKEND}/api/v1/images/${id}`;
   }
 }

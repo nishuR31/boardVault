@@ -1,6 +1,6 @@
 {
-  "name": "authservice",
-  "version": "1.0.0",
+  "name": "boardvault",
+  "version": "5.0.0",
   "main": "src/index.ts",
   "scripts": {
     "test": "bun run test/run-test.ts",
@@ -15,10 +15,12 @@
     "prisma:push": "bunx prisma db push --schema=prisma/board.schema.prisma && bunx prisma db push --schema=prisma/image.schema.prisma",
     "prisma:mig": "bunx prisma migrate dev --schema=prisma/board.schema.prisma && bunx prisma migrate dev --schema=prisma/image.schema.prisma",
     "git": "cd .. && git add . && git commit -m \"kuch toh kiya hu \"&& git push -f origin main && cd backend",
-    "gut": "cd .. && git add . && git commit -m \"kuch toh kiya hu \"&& git push -f origin main && cd backend"
+    "build:app": "cd .. && flutter build apk --dart-define=BACKEND=https://boardvault-fcl3.onrender.com && cd backend",
+    "build:web": "cd .. && flutter build web --dart-define=BACKEND=https://boardvault-fcl3.onrender.com && cd backend ",
+    "build": "bun run build:app && bun run build:web"
   },
   "keywords": [],
-  "author": "nishant0320",
+  "author": "nishur31",
   "license": "ISC",
   "description": "",
   "dependencies": {

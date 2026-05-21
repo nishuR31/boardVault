@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'footer.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -11,6 +12,11 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late ScrollController scrollController;
+
+  Future<void> _openReleases() async {
+    final uri = Uri.parse('https://github.com/nishuR31/boardVault/releases');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 
   @override
   void initState() {
@@ -224,6 +230,40 @@ class _HomeState extends State<Home> {
                     ),
                   ),
                 ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Card(
+              color: colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Download our Android app for a better experience.',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'We will be providing support for other platforms soon.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: _openReleases,
+                      icon: const Icon(Icons.download_rounded),
+                      label: const Text('Go to GitHub Releases'),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 20),

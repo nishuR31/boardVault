@@ -10,6 +10,7 @@ import {
   update,
   ping,
 } from "../../controllers/controller";
+import { getImageById } from "../../controllers/imageController";
 
 import requireCrudPassword from "../../middlewares/auth";
 
@@ -27,6 +28,9 @@ const routes: FastifyPluginAsync = async (app) => {
   app.get("/boards/:id", findById);
   // Read one by name (distinct path to avoid route conflict)
   app.get("/boards/name/:name", findOne);
+
+  // Serve images by id for Flutter/Image.network
+  app.get("/images/:id", getImageById);
 
   // Update
   app.put("/boards/:id", { preHandler: requireCrudPassword }, update);
