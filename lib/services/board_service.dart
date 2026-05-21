@@ -8,11 +8,7 @@ class BoardService {
   final String baseUrl;
 
   BoardService({String? baseUrl})
-    : baseUrl =
-          baseUrl ??
-          (String.fromEnvironment("BACKEND_URL", defaultValue: "").isNotEmpty
-              ? String.fromEnvironment("BACKEND_URL")
-              : _defaultBackend);
+    : baseUrl = baseUrl ?? _defaultBackend;
 
   Future<List<Board>> fetchBoards() async {
     try {
