@@ -4,7 +4,7 @@ import redis, { disconnectRedis } from "./config/redisConfig";
 
 const startServer = async () => {
   try {
-    const address = await app.listen({ port: PORT });
+    const address = await app.listen({ port: PORT, host: "0.0.0.0" });
     console.info(`BoardVault started`);
     console.info(`   Environment : ${NODE_ENV}`);
     console.info(`   Port        : ${PORT}`);
