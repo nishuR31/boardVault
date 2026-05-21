@@ -137,6 +137,10 @@ const config = {
         "fromEnvVar": null,
         "value": "windows",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
@@ -162,8 +166,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// Image Database Schema\n// Generated Client: src/generated/image-client\n// Version: 1.0\n// Last Updated: 2026-05-17\n\ngenerator clientImage {\n  provider      = \"prisma-client-js\"\n  binaryTargets = [\"native\"]\n  output        = \"../src/generated/image-client\"\n}\n\ndatasource dbImage {\n  provider = \"postgresql\"\n  url      = env(\"IMG_URL\")\n}\n\nmodel Image {\n  id   String @id @default(uuid())\n  name String @unique\n  data Bytes\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([name])\n  @@map(\"images\")\n}\n",
-  "inlineSchemaHash": "f39cac8d9731f7c69f7ccc00cbe28057ef1f0555320f2e8f88d2c85bd6d4c479",
+  "inlineSchema": "// Image Database Schema\n// Generated Client: src/generated/image-client\n// Version: 1.0\n// Last Updated: 2026-05-17\n\ngenerator clientImage {\n  provider      = \"prisma-client-js\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n  output        = \"../src/generated/image-client\"\n}\n\ndatasource dbImage {\n  provider = \"postgresql\"\n  url      = env(\"IMG_URL\")\n}\n\nmodel Image {\n  id   String @id @default(uuid())\n  name String @unique\n  data Bytes\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([name])\n  @@map(\"images\")\n}\n",
+  "inlineSchemaHash": "a900824ae926a04face591b30894de21e76cfc901a3f962d82949da899ddd011",
   "copyEngine": true
 }
 
@@ -204,6 +208,10 @@ Object.assign(exports, Prisma)
 // file annotations for bundling tools to include these files
 path.join(__dirname, "query_engine-windows.dll.node");
 path.join(process.cwd(), "src/generated/image-client/query_engine-windows.dll.node")
+
+// file annotations for bundling tools to include these files
+path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");
+path.join(process.cwd(), "src/generated/image-client/libquery_engine-debian-openssl-3.0.x.so.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "src/generated/image-client/schema.prisma")

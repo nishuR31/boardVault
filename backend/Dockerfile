@@ -7,4 +7,4 @@ RUN bun install
 
 COPY . .
 EXPOSE 3030
-CMD ["bun","run","start"]
+CMD ["bun","start"]
