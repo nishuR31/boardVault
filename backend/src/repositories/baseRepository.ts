@@ -112,6 +112,10 @@ export default class BaseRepository<T = any> {
     try {
       return await this.imageModel.create({ data, ...options });
     } catch (error) {
+      if (error?.code === "P2002" && data?.name) {
+        const existing = await this.imageModel.findUnique({ where: { name: data.name } });
+        if (existing) return existing;
+      }
       handlePrismaError(error, this.imageModelName, "creation");
     }
   }

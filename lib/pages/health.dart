@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '/config/app_env.dart';
 import './footer.dart';
 
 class Health extends StatefulWidget {
@@ -24,10 +25,7 @@ class _HealthState extends State<Health> {
     super.dispose();
   }
 
-  static const String _backendBaseUrl = String.fromEnvironment(
-    'BACKEND_URL',
-    defaultValue: 'http://localhost:3000',
-  );
+  final String _backendBaseUrl = AppEnv.backendUrl;
 
   String _status = 'Tap the button to ping the backend.';
   bool _loading = false;

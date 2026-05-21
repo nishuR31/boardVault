@@ -1,14 +1,13 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import '/config/app_env.dart';
 import '/models/board_model.dart';
 
 class BoardService {
-  static const String _defaultBackend = 'http://localhost:3030';
   final String baseUrl;
 
-  BoardService({String? baseUrl})
-    : baseUrl = baseUrl ?? _defaultBackend;
+  BoardService({String? baseUrl}) : baseUrl = baseUrl ?? AppEnv.backendUrl;
 
   Future<List<Board>> fetchBoards() async {
     try {

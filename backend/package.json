@@ -7,6 +7,7 @@
     "format": "bunx prettier --write .",
     "dev": "bun --watch src/index.ts",
     "start": "bun src/index.ts",
+    "img": "bun scripts/syncBoardImages.ts",
     "feed": "bun src/feedData.ts",
     "prisma": "bun run prisma:gen  && bun run prisma:push",
     "prisma:valid": " bunx prisma validate --schema=prisma/board.schema.prisma &&  bunx prisma validate --schema=prisma/image.schema.prisma",

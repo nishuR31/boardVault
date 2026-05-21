@@ -51,6 +51,26 @@ export default class Service {
       // don't fail cache logic; propagate after trying to create record
     }
     // invalidate list cache, set individual cache
+    // Defensive normalization: ensure array fields are arrays and strip transient file objects
+    const arrFields = ["category", "bestFor", "alternatives"] as const;
+    const payloadAny = payload as any;
+    for (const f of arrFields) {
+      if (payloadAny[f] && typeof payloadAny[f] === "string") {
+        try {
+          payloadAny[f] = JSON.parse(payloadAny[f]);
+        } catch (e) {
+          if (payloadAny[f].includes(","))
+            payloadAny[f] = payloadAny[f].split(",").map((s: string) => s.trim());
+        }
+      }
+    }
+
+    // Remove any stray file objects that might have slipped into payload
+    if (payloadAny.photoFrontId && typeof payloadAny.photoFrontId === "object")
+      delete payloadAny.photoFrontId;
+    if (payloadAny.pinDiagramId && typeof payloadAny.pinDiagramId === "object")
+      delete payloadAny.pinDiagramId;
+
     const created = await boardRepo.create(payload);
     void Promise.all([
       del(ALL_BOARDS_KEY),
@@ -87,9 +107,45 @@ export default class Service {
     return board;
   }
 
-  async update(id: string, data: UpdateBody) {
-    const { password: _password, ...payload } = data;
+  async update(id: string, data: UpdateBody, files?: Record<string, any>) {
+    const { password: _password, ...payload } = data as any;
     const board = await boardRepo.findById(id);
+
+    if (payload.slug === undefined && payload.name) {
+      payload.slug = generateSlug(payload.name);
+    }
+
+    if (files) {
+      const uploadPics: Record<string, any> = {};
+      for (const key of Object.keys(files)) {
+        const uploaded = await this.uploadPic(files[key]);
+        uploadPics[key] = uploaded;
+      }
+
+      if (uploadPics.photoFront) payload.photoFrontId = uploadPics.photoFront;
+      if (uploadPics.photoFrontId) payload.photoFrontId = uploadPics.photoFrontId;
+      if (uploadPics.pinDiagram) payload.pinDiagramId = uploadPics.pinDiagram;
+      if (uploadPics.pinDiagramId) payload.pinDiagramId = uploadPics.pinDiagramId;
+    }
+
+    const arrFields = ["category", "bestFor", "alternatives"] as const;
+    const payloadAny = payload as any;
+    for (const f of arrFields) {
+      if (payloadAny[f] && typeof payloadAny[f] === "string") {
+        try {
+          payloadAny[f] = JSON.parse(payloadAny[f]);
+        } catch (e) {
+          if (payloadAny[f].includes(","))
+            payloadAny[f] = payloadAny[f].split(",").map((s: string) => s.trim());
+        }
+      }
+    }
+
+    if (payloadAny.photoFront && typeof payloadAny.photoFront === "object")
+      delete payloadAny.photoFront;
+    if (payloadAny.pinDiagram && typeof payloadAny.pinDiagram === "object")
+      delete payloadAny.pinDiagram;
+
     const updated = await boardRepo.update(board.id, payload);
 
     void Promise.all([
@@ -145,6 +201,10 @@ export default class Service {
     if (!inputBuffer && file && typeof file === "object" && file.file) {
       if (Buffer.isBuffer(file.file)) {
         inputBuffer = file.file;
+      } else if (file.file instanceof Uint8Array) {
+        inputBuffer = Buffer.from(file.file);
+      } else if (file.file instanceof ArrayBuffer) {
+        inputBuffer = Buffer.from(file.file);
       } else if (file.file.readable) {
         // stream -> buffer
         inputBuffer = await new Promise<Buffer>((resolve, reject) => {
@@ -171,6 +231,7 @@ export default class Service {
     // Prepare prisma payload
     const data: any = { name };
     if (inputBuffer) data.data = inputBuffer;
+    else if (typeof file === "string") data.data = Buffer.from(file);
 
     const { id } = await boardRepo.upload(data);
     return id;

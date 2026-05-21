@@ -10,7 +10,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const BASE = process.env.BASE || process.env.BACKEND || "http://127.0.0.1:3001";
+const BASE = process.env.BACKEND || "http://127.0.0.1:3001";
 const TIMEOUT = Number(process.env.TEST_TIMEOUT) || 5000;
 const POST_TIMEOUT = Number(process.env.POST_TIMEOUT) || 30000; // longer for POST with potential image processing
 const CRUD_PASSWORD = process.env.CRUD_PASSWORD || "---";

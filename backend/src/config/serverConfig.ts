@@ -19,7 +19,8 @@ import {
 
 let fastifyApp = fastify({ logger: true, exposeHeadRoutes: true });
 fastifyApp.register(cors, { origin: true });
-fastifyApp.register(multipart);
+// Allow larger multipart uploads (5 MB per file) for image uploads
+fastifyApp.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } });
 const rateLimitWindow = RATE_LIMIT_WINDOW_SECONDS;
 const rateLimitReq = RATE_LIMIT_MAX_REQUESTS;
 
