@@ -1,8 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
-import '/config/app_env.dart';
-import '/models/board_model.dart';
+import '../config/app_env.dart';
+import '../models/board_model.dart';
 
 class BoardService {
   final String baseUrl;

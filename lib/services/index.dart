@@ -1,1 +1,1 @@
-export 'board_service.dart';
+export './board_service.dart';

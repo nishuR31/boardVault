@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '/models/board_model.dart';
-import '/services/board_service.dart';
+import '../models/board_model.dart';
+import '../services/board_service.dart';
 
 class BoardDetail extends StatefulWidget {
   final String boardId;

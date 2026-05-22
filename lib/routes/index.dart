@@ -1,13 +1,13 @@
 import "package:go_router/go_router.dart";
-import "/pages/home.dart";
-import "/pages/about.dart";
-import "/pages/boards.dart";
-import "/pages/board.dart";
-import "/pages/privacy.dart";
-import "/pages/terms.dart";
-import "/pages/faqs.dart";
-import "/pages/health.dart";
-import "/pages/error.dart";
+import "../pages/home.dart";
+import "../pages/about.dart";
+import "../pages/boards.dart";
+import "../pages/board.dart";
+import "../pages/privacy.dart";
+import "../pages/terms.dart";
+import "../pages/faqs.dart";
+import "../pages/health.dart";
+import "../pages/error.dart";
 
 final GoRouter appRouter = GoRouter(
   routes: [

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '/config/app_env.dart';
+import '../config/app_env.dart';
 import './footer.dart';
 
 class Health extends StatefulWidget {
@@ -31,7 +31,12 @@ class _HealthState extends State<Health> {
   bool _loading = false;
   bool _down = true;
 
+  String test() {
+    return _backendBaseUrl;
+  }
+
   Future<void> _pingBackend() async {
+    print(_backendBaseUrl);
     setState(() {
       _loading = true;
       _status = 'Pinging backend...';
