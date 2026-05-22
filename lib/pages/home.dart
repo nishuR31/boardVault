@@ -14,7 +14,9 @@ class _HomeState extends State<Home> {
   late ScrollController scrollController;
 
   Future<void> _openReleases() async {
-    final uri = Uri.parse('https://github.com/nishuR31/boardVault/releases');
+    final uri = Uri.parse(
+      'https://github.com/nishuR31/boardVault/releases/download/boardVault/BoardVault.apk',
+    );
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 

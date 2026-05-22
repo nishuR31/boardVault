@@ -43614,7 +43614,7 @@ A.Eh.prototype={
 xc(){var s=0,r=A.N(t.H)
 var $async$xc=A.O(function(a,b){if(a===1)return A.K(b,r)
 for(;;)switch(s){case 0:s=2
-return A.R(A.axt(A.cU("https://github.com/nishuR31/boardVault/releases",0,null),B.H2),$async$xc)
+return A.R(A.axt(A.cU("https://github.com/nishuR31/boardVault/releases/download/boardVault/BoardVault.apk",0,null),B.H2),$async$xc)
 case 2:return A.L(null,r)}})
 return A.M($async$xc,r)},
 aw(){this.aI()
