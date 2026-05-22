@@ -29,23 +29,44 @@ class Board {
 
   /// Factory constructor to create Board from JSON
   factory Board.fromJson(Map<String, dynamic> json) {
+    String? safeString(dynamic v) => v == null ? null : v.toString();
+
+    List<String> safeList(dynamic v) {
+      if (v == null) return <String>[];
+      if (v is List)
+        return v
+            .map((e) => e?.toString() ?? '')
+            .where((e) => e.isNotEmpty)
+            .toList();
+      return <String>[];
+    }
+
+    DateTime safeDate(dynamic v) {
+      if (v == null) return DateTime.now();
+      if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
+      if (v is String) {
+        final parsed = DateTime.tryParse(v);
+        if (parsed != null) return parsed;
+        // try parse as int string
+        final asInt = int.tryParse(v);
+        if (asInt != null) return DateTime.fromMillisecondsSinceEpoch(asInt);
+      }
+      return DateTime.now();
+    }
+
     return Board(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? 'Unknown',
-      slug: json['slug'] as String? ?? '',
-      type: json['type'] as String? ?? 'SBC',
-      description: json['description'] as String? ?? '',
-      category: List<String>.from(json['category'] as List? ?? []),
-      bestFor: List<String>.from(json['bestFor'] as List? ?? []),
-      alternatives: List<String>.from(json['alternatives'] as List? ?? []),
-      photoFrontId: json['photoFrontId'] as String?,
-      pinDiagramId: json['pinDiagramId'] as String?,
-      createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
-          : DateTime.now(),
-      updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
-          : DateTime.now(),
+      id: safeString(json['id']) ?? '',
+      name: safeString(json['name']) ?? 'Unknown',
+      slug: safeString(json['slug']) ?? '',
+      type: safeString(json['type']) ?? 'SBC',
+      description: safeString(json['description']) ?? '',
+      category: safeList(json['category']),
+      bestFor: safeList(json['bestFor']),
+      alternatives: safeList(json['alternatives']),
+      photoFrontId: safeString(json['photoFrontId']),
+      pinDiagramId: safeString(json['pinDiagramId']),
+      createdAt: safeDate(json['createdAt']),
+      updatedAt: safeDate(json['updatedAt']),
     );
   }
 
