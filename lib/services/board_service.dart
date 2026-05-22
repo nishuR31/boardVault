@@ -57,9 +57,15 @@ class BoardService {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        final boardData = jsonData is Map && jsonData.containsKey('data')
+        var boardData = jsonData is Map && jsonData.containsKey('data')
             ? jsonData['data']
             : jsonData;
+
+        // Handle case where data is a list instead of a single object
+        if (boardData is List && boardData.isNotEmpty) {
+          boardData = boardData.first;
+        }
+
         return Board.fromJson(boardData as Map<String, dynamic>);
       }
       throw Exception('Failed to fetch board: ${response.statusCode}');
@@ -79,9 +85,15 @@ class BoardService {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        final boardData = jsonData is Map && jsonData.containsKey('data')
+        var boardData = jsonData is Map && jsonData.containsKey('data')
             ? jsonData['data']
             : jsonData;
+
+        // Handle case where data is a list instead of a single object
+        if (boardData is List && boardData.isNotEmpty) {
+          boardData = boardData.first;
+        }
+
         return Board.fromJson(boardData as Map<String, dynamic>);
       }
       throw Exception('Failed to fetch board: ${response.statusCode}');
