@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import './footer.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -12,6 +14,12 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   late ScrollController scrollController;
+
+  bool _isNativeApp() {
+    // Returns true if running as native Android/iOS app
+    // Returns false if running on web browser or hybrid web wrapper
+    return !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+  }
 
   Future<void> _openReleases() async {
     final uri = Uri.parse(
@@ -239,33 +247,61 @@ class _HomeState extends State<Home> {
               color: colorScheme.surfaceContainerHighest,
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'Download our Android app for a better experience.',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
+                child: _isNativeApp()
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Thank you for using Board Vault!',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'You are already running our app natively. Enjoy exploring boards and learning!',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: null,
+                            icon: const Icon(Icons.check_circle_rounded),
+                            label: const Text('Already Installed'),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            'Download our Android app for a better experience.',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'We will be providing support for other platforms soon.',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton.icon(
+                            onPressed: _openReleases,
+                            icon: const Icon(Icons.download_rounded),
+                            label: const Text('Go to GitHub Releases'),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'We will be providing support for other platforms soon.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: _openReleases,
-                      icon: const Icon(Icons.download_rounded),
-                      label: const Text('Go to GitHub Releases'),
-                    ),
-                  ],
-                ),
               ),
             ),
             const SizedBox(height: 20),

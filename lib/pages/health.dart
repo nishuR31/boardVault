@@ -25,25 +25,26 @@ class _HealthState extends State<Health> {
     super.dispose();
   }
 
-  final String _backendBaseUrl = AppEnv.backendUrl;
+  String get _backendBaseUrl =>
+      AppEnv.backendUrl.replaceAll(RegExp(r'\s+'), '').trim();
 
   String _status = 'Tap the button to ping the backend.';
   bool _loading = false;
   bool _down = true;
 
-  String test() {
-    return _backendBaseUrl;
+  Uri _healthUri() {
+    final baseUri = Uri.parse(_backendBaseUrl);
+    return baseUri.resolve('health');
   }
 
   Future<void> _pingBackend() async {
-    print(_backendBaseUrl);
     setState(() {
       _loading = true;
       _status = 'Pinging backend...';
     });
 
     try {
-      final uri = Uri.parse('$_backendBaseUrl/health');
+      final uri = _healthUri();
       final response = await http.get(uri);
       final ok = response.statusCode >= 200 && response.statusCode < 300;
 
