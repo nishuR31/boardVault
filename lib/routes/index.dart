@@ -7,6 +7,7 @@ import "../pages/privacy.dart";
 import "../pages/terms.dart";
 import "../pages/faqs.dart";
 import "../pages/health.dart";
+import "../pages/maintainers.dart";
 import "../pages/error.dart";
 
 final GoRouter appRouter = GoRouter(
@@ -25,6 +26,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: "/health", builder: (context, state) => const Health()),
     GoRoute(path: "/terms", builder: (context, state) => const Terms()),
     GoRoute(path: "/faqs", builder: (context, state) => const FAQs()),
+    GoRoute(path: "/maintainers", builder: (context, state) => const Maintainers()),
     GoRoute(
       path: '/:path(.*)',
       builder: (context, state) => Error(route: state.uri.path),

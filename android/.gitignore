@@ -12,3 +12,9 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Application packages (Do not commit APKs or AABs)
+*.apk
+*.aab
+*.ap_
+

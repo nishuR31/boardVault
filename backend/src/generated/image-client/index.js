@@ -126,7 +126,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "A:\\code\\boardvault\\backend\\src\\generated\\image-client",
+      "value": "/home/nishu/TechStack/codes/boardVault/backend/src/generated/image-client",
       "fromEnvVar": null
     },
     "config": {
@@ -135,7 +135,7 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-3.0.x",
         "native": true
       },
       {
@@ -144,7 +144,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "A:\\code\\boardvault\\backend\\prisma\\image.schema.prisma",
+    "sourceFilePath": "/home/nishu/TechStack/codes/boardVault/backend/prisma/image.schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -158,6 +158,7 @@ const config = {
     "dbImage"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "dbImage": {
       "url": {
@@ -204,10 +205,6 @@ warnEnvConflicts({
 const PrismaClient = getPrismaClient(config)
 exports.PrismaClient = PrismaClient
 Object.assign(exports, Prisma)
-
-// file annotations for bundling tools to include these files
-path.join(__dirname, "query_engine-windows.dll.node");
-path.join(process.cwd(), "src/generated/image-client/query_engine-windows.dll.node")
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-debian-openssl-3.0.x.so.node");

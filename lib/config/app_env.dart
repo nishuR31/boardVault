@@ -8,7 +8,7 @@ class AppEnv {
       dotenv.env['BACKEND'] ??
       const String.fromEnvironment(
         'BACKEND',
-        defaultValue: 'http://localhost:3030',
+        defaultValue: 'https://boardvault-fcl3.onrender.com',
       );
 
   static final backendUrl = _raw.replaceAll(RegExp(r'\s+'), '').trim();

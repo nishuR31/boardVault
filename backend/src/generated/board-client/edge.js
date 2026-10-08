@@ -140,7 +140,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "A:\\code\\boardvault\\backend\\src\\generated\\board-client",
+      "value": "/home/nishu/TechStack/codes/boardVault/backend/src/generated/board-client",
       "fromEnvVar": null
     },
     "config": {
@@ -149,12 +149,16 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-3.0.x",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "A:\\code\\boardvault\\backend\\prisma\\board.schema.prisma",
+    "sourceFilePath": "/home/nishu/TechStack/codes/boardVault/backend/prisma/board.schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -168,6 +172,7 @@ const config = {
     "dbBoard"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "dbBoard": {
       "url": {
@@ -176,8 +181,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// Board Database Schema\n// Generated Client: src/generated/board-client\n// Version: 1.0\n// Last Updated: 2026-05-17\n\ngenerator clientBoard {\n  provider      = \"prisma-client-js\"\n  binaryTargets = [\"native\"]\n  output        = \"../src/generated/board-client\"\n}\n\ndatasource dbBoard {\n  provider = \"postgresql\"\n  url      = env(\"DB_URL\")\n}\n\nenum BoardType {\n  SBC\n  MC\n\n  @@map(\"board_type\")\n}\n\nmodel Board {\n  id String @id @default(uuid())\n\n  name String @unique\n  slug String @unique\n\n  type BoardType\n\n  description String\n\n  category     String[]\n  bestFor      String[]\n  alternatives String[]\n\n  photoFrontId String?\n  pinDiagramId String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([name])\n  @@index([slug])\n  @@index([type])\n  @@map(\"boards\")\n}\n",
-  "inlineSchemaHash": "644884be1ff25d26e5a8c60a5fe68ade2ea94d4fcdd0331707000461185aaef7",
+  "inlineSchema": "// Board Database Schema\n// Generated Client: src/generated/board-client\n// Version: 1.0\n// Last Updated: 2026-05-17\n\ngenerator clientBoard {\n  provider      = \"prisma-client-js\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n\n  output = \"../src/generated/board-client\"\n}\n\ndatasource dbBoard {\n  provider = \"postgresql\"\n  url      = env(\"DB_URL\")\n}\n\nenum BoardType {\n  SBC\n  MC\n\n  @@map(\"board_type\")\n}\n\nmodel Board {\n  id String @id @default(uuid())\n\n  name String @unique\n  slug String @unique\n\n  type BoardType\n\n  description String\n\n  category     String[]\n  bestFor      String[]\n  alternatives String[]\n\n  photoFrontId String?\n  pinDiagramId String?\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([name])\n  @@index([slug])\n  @@index([type])\n  @@map(\"boards\")\n}\n",
+  "inlineSchemaHash": "5ef027d831c222a68821835ea19ef65bf4336f452637fc7576e3272df511b284",
   "copyEngine": true
 }
 config.dirname = '/'

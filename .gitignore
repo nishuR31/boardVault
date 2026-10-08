@@ -1,9 +1,12 @@
-# Miscellaneous
+# Miscellaneous & System
 *.class
 *.log
 *.pyc
 *.swp
+*.swo
+*~
 .DS_Store
+Thumbs.db
 .atom/
 .build/
 .buildlog/
@@ -12,59 +15,91 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# AI / Agent scratch and planning files
+.context
+.errors
+.plan
+scratch/
+
+# IDE & Editor files
 *.iml
-upload-keystore.jks
-*.jks
 *.ipr
 *.iws
 .idea/
 bunCache/
+# .vscode/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
-
-# Flutter/Dart/Pub related
+# Flutter & Dart
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
+/coverage/
+
+# Build artifacts:
+# KEEP web build output for deployment, ignore all other builds
 /build/*
 !/build/web/
 !/build/web/**
-/coverage/
+
+# Application Packages & Binaries:
+# Strictly DO NOT commit APKs, App Bundles, IPAs, or DEX binaries
+*.apk
+*.aab
+*.ap_
+*.ipa
+*.app
+*.xcarchive
+*.dex
+
+# Secrets, Environment & Sensitive Files
+.env
+.env.*
+!.env.example
+android/.env
+backend/.env
+backend/.env.*
 boardvault-3d538d2e7750.json
 boards/
 boards.json
 
-# Local environment files and Android signing secrets
-.env
-.env.*
-android/.env
-backend/.env
-backend/.env.*
-
-# Android local/config files that should not be committed
-android/local.properties
-android/key.properties
-android/app/local.properties
-android/app/upload-keystore.jks
-android/app/*.jks
-android/app/*.keystore
+# Android Build & Cache directories
+.gradle/
+**/.gradle/
+android/.gradle/
 android/app/build/
 android/build/
-
-# Symbolication related
-app.*.symbols
-
-# Obfuscation related
-app.*.map.json
-
-# Android Studio will place build artifacts here
+android/captures/
+android/.cxx/
+**/.cxx/
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android Local Configurations & Plugin Registrants
+**/local.properties
+android/local.properties
+android/app/local.properties
+GeneratedPluginRegistrant.java
+GeneratedPluginRegistrant.kt
+
+# Keystores & Signing Secrets
+*.keystore
+*.jks
+*.p12
+*.pfx
+**/key.properties
+android/key.properties
+android/app/upload-keystore.jks
+upload-keystore.jks
+
+# Symbolication & Obfuscation
+app.*.symbols
+app.*.map.json
+
+# Backend & Prisma native binary engines
+*query_engine*.node*
+*.so.node

@@ -87,7 +87,7 @@ export default class Service {
     });
   }
   async findById(id: string) {
-    return getOrSet(ALL_BOARDS_KEY, 60, async () => {
+    return getOrSet(BOARD_BY_ID(id), 60, async () => {
       return boardRepo.findById(id);
     });
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../models/board_model.dart';
 import '../services/board_service.dart';
+import './footer.dart';
 
 class Boards extends StatefulWidget {
   const Boards({super.key});
@@ -13,52 +14,88 @@ class Boards extends StatefulWidget {
 class _BoardsState extends State<Boards> {
   late BoardService boardService;
   late Future<List<Board>> _boardsFuture;
+  late ScrollController _scrollController;
+
   List<Board> _allBoards = [];
   List<Board> _filteredBoards = [];
   String _searchQuery = '';
-  String _selectedType = '';
+  String _selectedType = ''; // '' (All), 'SBC', 'MC'
+  String _selectedCategory = ''; // '' for all
+  bool _isLoading = true;
 
   final TextEditingController _searchController = TextEditingController();
+
+  final List<String> _quickCategories = [
+    'All',
+    'Linux',
+    'IoT',
+    'Microcontroller',
+    'Robotics',
+    'AI',
+    'Beginner',
+    'Low Power',
+    'High Speed',
+  ];
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     boardService = BoardService();
-    _boardsFuture = boardService.fetchBoards().then((boards) {
-      setState(() {
-        _allBoards = boards;
-        _filteredBoards = boards;
-      });
+    _loadBoards();
+  }
+
+  void _loadBoards({bool forceRefresh = false}) {
+    setState(() => _isLoading = true);
+    _boardsFuture = boardService.fetchBoards(forceRefresh: forceRefresh).then((boards) {
+      if (mounted) {
+        setState(() {
+          _allBoards = boards;
+          _isLoading = false;
+        });
+        _applyFilters();
+      }
       return boards;
+    }).catchError((error) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      throw error;
     });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   void _applyFilters() {
-    List<Board> filtered = _allBoards;
-
-    // Filter by search query
-    if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
-      filtered = filtered
-          .where(
-            (board) =>
-                board.name.toLowerCase().contains(query) ||
-                board.description.toLowerCase().contains(query),
-          )
-          .toList();
-    }
+    List<Board> filtered = List.from(_allBoards);
 
     // Filter by type
     if (_selectedType.isNotEmpty) {
-      filtered = filtered
-          .where((board) => board.type == _selectedType)
-          .toList();
+      filtered = filtered.where((b) => b.type.toUpperCase() == _selectedType.toUpperCase()).toList();
+    }
+
+    // Filter by category
+    if (_selectedCategory.isNotEmpty && _selectedCategory != 'All') {
+      final cat = _selectedCategory.toLowerCase();
+      filtered = filtered.where((b) => b.category.any((c) => c.toLowerCase().contains(cat))).toList();
+    }
+
+    // Filter by search query
+    if (_searchQuery.trim().isNotEmpty) {
+      final query = _searchQuery.trim().toLowerCase();
+      filtered = filtered.where((b) {
+        final inName = b.name.toLowerCase().contains(query);
+        final inDesc = b.description.toLowerCase().contains(query);
+        final inCat = b.category.any((c) => c.toLowerCase().contains(query));
+        final inBest = b.bestFor.any((bf) => bf.toLowerCase().contains(query));
+        final inAlt = b.alternatives.any((alt) => alt.toLowerCase().contains(query));
+        return inName || inDesc || inCat || inBest || inAlt;
+      }).toList();
     }
 
     setState(() {
@@ -71,6 +108,7 @@ class _BoardsState extends State<Boards> {
     setState(() {
       _searchQuery = '';
       _selectedType = '';
+      _selectedCategory = '';
       _filteredBoards = _allBoards;
     });
   }
@@ -79,209 +117,398 @@ class _BoardsState extends State<Boards> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    final sbcCount = _allBoards.where((b) => b.type == 'SBC').length;
+    final mcCount = _allBoards.where((b) => b.type == 'MC').length;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Boards'), elevation: 2),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            const Icon(Icons.developer_board_rounded, size: 24),
+            const SizedBox(width: 8),
+            const Text(
+              'Board Vault',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Sync / Refresh Boards',
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh_rounded),
+            onPressed: _isLoading ? null : () => _loadBoards(forceRefresh: true),
+          ),
+          IconButton(
+            tooltip: 'About Board Vault',
+            icon: const Icon(Icons.info_outline_rounded),
+            onPressed: () => context.push('/about'),
+          ),
+        ],
+        elevation: 1,
+      ),
       body: FutureBuilder<List<Board>>(
         future: _boardsFuture,
         builder: (context, snapshot) {
-          // Loading state
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Loading boards...'),
-                ],
-              ),
-            );
-          }
-
-          // Error state
-          if (snapshot.hasError) {
+          // Loading initial state
+          if (snapshot.connectionState == ConnectionState.waiting && _allBoards.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline, size: 64, color: colorScheme.error),
+                  CircularProgressIndicator(color: colorScheme.primary),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading boards',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      snapshot.error.toString(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: colorScheme.onSurfaceVariant),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _boardsFuture = boardService.fetchBoards().then((
-                          boards,
-                        ) {
-                          _allBoards = boards;
-                          _filteredBoards = boards;
-                          return boards;
-                        });
-                      });
-                    },
-                    child: const Text('Retry'),
+                    'Loading hardware catalog...',
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                 ],
               ),
             );
           }
 
-          // No data
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.memory, size: 64, color: colorScheme.tertiary),
-                  const SizedBox(height: 16),
-                  const Text('No boards found'),
-                ],
-              ),
-            );
-          }
+          final isOffline = boardService.isOfflineMode;
 
-          // Data loaded successfully
-          return Column(
-            children: [
-              // Search and filter bar
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Search field
-                    TextField(
-                      controller: _searchController,
-                      onChanged: (value) {
-                        setState(() => _searchQuery = value);
-                        _applyFilters();
-                      },
-                      decoration: InputDecoration(
-                        hintText: 'Search boards...',
-                        prefixIcon: const Icon(Icons.search),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() => _searchQuery = '');
-                                  _applyFilters();
-                                },
-                              )
-                            : null,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+          return CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              // Top Status & Search Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Mode status badge (Live vs Offline Curated)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: isOffline
+                              ? colorScheme.tertiaryContainer.withOpacity(0.5)
+                              : colorScheme.primaryContainer.withOpacity(0.4),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isOffline
+                                ? colorScheme.tertiary.withOpacity(0.3)
+                                : colorScheme.primary.withOpacity(0.3),
+                          ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
+                        child: Row(
+                          children: [
+                            Icon(
+                              isOffline ? Icons.offline_bolt_rounded : Icons.cloud_done_rounded,
+                              size: 18,
+                              color: isOffline ? colorScheme.tertiary : colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                isOffline
+                                    ? 'Offline Curated Catalog — Ready with instant educational data'
+                                    : 'Live Synchronized — Connected to Board Vault API',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isOffline ? colorScheme.tertiary : colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                            if (isOffline)
+                              GestureDetector(
+                                onTap: () => _loadBoards(forceRefresh: true),
+                                child: Text(
+                                  'Try Live',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: colorScheme.tertiary,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
 
-                    // Type filter and reset
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButton<String>(
-                            value: _selectedType.isEmpty ? null : _selectedType,
-                            hint: const Text('Filter by Type'),
-                            isExpanded: true,
-                            items: const [
-                              DropdownMenuItem(
-                                value: '',
-                                child: Text('All Types'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'SBC',
-                                child: Text('SBC'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'MC',
-                                child: Text('Microcontroller'),
+                      // Search input
+                      TextField(
+                        controller: _searchController,
+                        onChanged: (value) {
+                          setState(() => _searchQuery = value);
+                          _applyFilters();
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Search by board name, chip, category, or use case...',
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear_rounded),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                    _applyFilters();
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Segmented type selector: All | Single Board Computers | Microcontrollers
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _TypeFilterButton(
+                              label: 'All Boards (${_allBoards.length})',
+                              isSelected: _selectedType == '',
+                              onTap: () {
+                                setState(() => _selectedType = '');
+                                _applyFilters();
+                              },
+                              colorScheme: colorScheme,
+                            ),
+                            const SizedBox(width: 8),
+                            _TypeFilterButton(
+                              label: 'SBC ($sbcCount)',
+                              icon: Icons.memory_rounded,
+                              isSelected: _selectedType == 'SBC',
+                              onTap: () {
+                                setState(() => _selectedType = 'SBC');
+                                _applyFilters();
+                              },
+                              colorScheme: colorScheme,
+                            ),
+                            const SizedBox(width: 8),
+                            _TypeFilterButton(
+                              label: 'Microcontrollers ($mcCount)',
+                              icon: Icons.developer_board_rounded,
+                              isSelected: _selectedType == 'MC',
+                              onTap: () {
+                                setState(() => _selectedType = 'MC');
+                                _applyFilters();
+                              },
+                              colorScheme: colorScheme,
+                            ),
+                            if (_selectedType.isNotEmpty ||
+                                (_selectedCategory.isNotEmpty && _selectedCategory != 'All') ||
+                                _searchQuery.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              IconButton(
+                                tooltip: 'Reset all filters',
+                                icon: const Icon(Icons.filter_alt_off_rounded, size: 20),
+                                onPressed: _resetFilters,
                               ),
                             ],
-                            onChanged: (value) {
-                              setState(() => _selectedType = value ?? '');
-                              _applyFilters();
-                            },
-                          ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        if (_searchQuery.isNotEmpty || _selectedType.isNotEmpty)
-                          IconButton(
-                            icon: const Icon(Icons.refresh),
-                            tooltip: 'Reset filters',
-                            onPressed: _resetFilters,
-                          ),
-                      ],
-                    ),
-
-                    // Results count
-                    const SizedBox(height: 8),
-                    Text(
-                      'Found ${_filteredBoards.length} board${_filteredBoards.length != 1 ? 's' : ''}',
-                      style: TextStyle(
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 12,
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 10),
+
+                      // Category chip rail
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: _quickCategories.map((category) {
+                            final isSelected = (_selectedCategory == category) ||
+                                (_selectedCategory.isEmpty && category == 'All');
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: ChoiceChip(
+                                label: Text(
+                                  category,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                                  ),
+                                ),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _selectedCategory = category == 'All' ? '' : category;
+                                  });
+                                  _applyFilters();
+                                },
+                                visualDensity: VisualDensity.compact,
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Results header count
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Showing ${_filteredBoards.length} of ${_allBoards.length} boards',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (_searchQuery.isNotEmpty)
+                            Text(
+                              'Search: "$_searchQuery"',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: colorScheme.primary,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
-              // Boards list
-              Expanded(
-                child: _filteredBoards.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 48,
+              // Boards List or Empty State
+              if (_filteredBoards.isEmpty)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 56,
+                            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'No matching boards found',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try clearing search keywords or switching filters.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
                               color: colorScheme.onSurfaceVariant,
                             ),
-                            const SizedBox(height: 16),
-                            const Text('No boards match your search'),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        itemCount: _filteredBoards.length,
-                        itemBuilder: (context, index) {
-                          return _BoardCard(
-                            board: _filteredBoards[index],
-                            onTap: () {
-                              context.push(
-                                '/board/${_filteredBoards[index].id}',
-                              );
-                            },
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 16),
+                          OutlinedButton.icon(
+                            onPressed: _resetFilters,
+                            icon: const Icon(Icons.refresh_rounded, size: 18),
+                            label: const Text('Reset Filters'),
+                          ),
+                        ],
                       ),
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final board = _filteredBoards[index];
+                        return _BoardCard(
+                          board: board,
+                          onTap: () => context.push('/board/${board.id}'),
+                        );
+                      },
+                      childCount: _filteredBoards.length,
+                    ),
+                  ),
+                ),
+
+              // Bottom Footer
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Footer(scrollController: _scrollController),
+                ),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+class _TypeFilterButton extends StatelessWidget {
+  const _TypeFilterButton({
+    required this.label,
+    this.icon,
+    required this.isSelected,
+    required this.onTap,
+    required this.colorScheme,
+  });
+
+  final String label;
+  final IconData? icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? colorScheme.primary : colorScheme.outlineVariant.withOpacity(0.5),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 15,
+                  color: isSelected ? colorScheme.onPrimary : colorScheme.primary,
+                ),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -296,57 +523,79 @@ class _BoardCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isSBC = board.type.toUpperCase() == 'SBC';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0.5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: colorScheme.outlineVariant.withOpacity(0.4)),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image
+              // Board Thumbnail or Icon
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(10),
                 child: SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: _buildImage(board.photoFrontId, colorScheme),
+                  width: 95,
+                  height: 95,
+                  child: _buildThumbnail(board.photoFrontId, isSBC, colorScheme),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
 
-              // Content
+              // Board Details
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Type chip
-                    Chip(
-                      label: Text(
-                        board.type,
-                        style: const TextStyle(fontSize: 11),
-                      ),
-                      backgroundColor: colorScheme.tertiary.withOpacity(0.2),
-                      labelStyle: TextStyle(
-                        color: colorScheme.tertiary,
-                        fontSize: 11,
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      visualDensity: VisualDensity.compact,
+                    // Type Tag & Category Pill
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: isSBC
+                                ? colorScheme.primary.withOpacity(0.12)
+                                : colorScheme.secondary.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            isSBC ? 'SBC' : 'MICROCONTROLLER',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.4,
+                              color: isSBC ? colorScheme.primary : colorScheme.secondary,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          isSBC ? Icons.memory_rounded : Icons.developer_board_rounded,
+                          size: 18,
+                          color: colorScheme.onSurfaceVariant.withOpacity(0.7),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
 
-                    // Name
+                    // Title
                     Text(
                       board.name,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.primary,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -358,36 +607,37 @@ class _BoardCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
+                        height: 1.4,
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
 
-                    // Categories
+                    // Categories & Best-for preview
                     if (board.category.isNotEmpty)
                       Wrap(
                         spacing: 4,
                         runSpacing: 4,
-                        children: board.category.take(2).map((cat) {
-                          return Chip(
-                            label: Text(
-                              cat,
-                              style: const TextStyle(fontSize: 10),
+                        children: board.category.take(3).map((cat) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: colorScheme.surfaceContainerHighest,
+                              borderRadius: BorderRadius.circular(4),
                             ),
-                            padding: const EdgeInsets.symmetric(horizontal: 6),
-                            visualDensity: VisualDensity.compact,
+                            child: Text(
+                              cat,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w500,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
                           );
                         }).toList(),
                       ),
                   ],
                 ),
-              ),
-
-              // Icon
-              Icon(
-                board.type == 'SBC' ? Icons.memory : Icons.developer_board,
-                color: colorScheme.tertiary,
-                size: 28,
               ),
             ],
           ),
@@ -396,37 +646,44 @@ class _BoardCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImage(String? imageUrl, ColorScheme colorScheme) {
-    if (imageUrl == null || imageUrl.isEmpty) {
-      return Container(
-        color: colorScheme.surfaceContainerHighest,
-        child: Icon(Icons.image, color: colorScheme.onSurfaceVariant),
+  Widget _buildThumbnail(String? imageUrl, bool isSBC, ColorScheme colorScheme) {
+    if (imageUrl != null && imageUrl.isNotEmpty && imageUrl.startsWith('http')) {
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _fallbackThumbnail(isSBC, colorScheme),
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) return child;
+          return Container(
+            color: colorScheme.surfaceContainerHighest,
+            child: const Center(
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          );
+        },
       );
     }
+    return _fallbackThumbnail(isSBC, colorScheme);
+  }
 
-    return Image.network(
-      imageUrl,
-      fit: BoxFit.cover,
-      loadingBuilder: (context, child, progress) {
-        return Container(
-          color: colorScheme.surfaceContainerHighest,
-          child: progress == null
-              ? child
-              : const Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          color: colorScheme.surfaceContainerHighest,
-          child: const Icon(Icons.image_not_supported),
-        );
-      },
+  Widget _fallbackThumbnail(bool isSBC, ColorScheme colorScheme) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isSBC
+            ? colorScheme.primary.withOpacity(0.08)
+            : colorScheme.secondary.withOpacity(0.08),
+      ),
+      child: Center(
+        child: Icon(
+          isSBC ? Icons.memory_rounded : Icons.developer_board_rounded,
+          size: 40,
+          color: isSBC ? colorScheme.primary : colorScheme.secondary,
+        ),
+      ),
     );
   }
 }

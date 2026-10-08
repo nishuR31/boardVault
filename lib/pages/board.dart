@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../models/board_model.dart';
 import '../services/board_service.dart';
+import './footer.dart';
 
 class BoardDetail extends StatefulWidget {
   final String boardId;
@@ -338,6 +339,10 @@ class _BoardDetailState extends State<BoardDetail> {
                       ],
                     ],
                   ),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Footer(),
                 ),
               ],
             ),

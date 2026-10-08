@@ -125,7 +125,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "A:\\code\\boardvault\\backend\\src\\generated\\image-client",
+      "value": "/home/nishu/TechStack/codes/boardVault/backend/src/generated/image-client",
       "fromEnvVar": null
     },
     "config": {
@@ -134,7 +134,7 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "windows",
+        "value": "debian-openssl-3.0.x",
         "native": true
       },
       {
@@ -143,7 +143,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "A:\\code\\boardvault\\backend\\prisma\\image.schema.prisma",
+    "sourceFilePath": "/home/nishu/TechStack/codes/boardVault/backend/prisma/image.schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -157,6 +157,7 @@ const config = {
     "dbImage"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "dbImage": {
       "url": {

@@ -9,6 +9,10 @@ Future<void> main() async {
   if (kIsWeb) {
     usePathUrlStrategy();
   }
-  await dotenv.load(fileName: '.env');
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (e) {
+    debugPrint('[Main] Notice: .env file could not be loaded ($e), falling back to defaults.');
+  }
   runApp(const App());
 }
