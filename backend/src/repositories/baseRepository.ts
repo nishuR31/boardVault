@@ -111,7 +111,7 @@ export default class BaseRepository<T = any> {
   async upload(data: any, options: any = {}): Promise<any> {
     try {
       return await this.imageModel.create({ data, ...options });
-    } catch (error) {
+    } catch (error: any) {
       if (error?.code === "P2002" && data?.name) {
         const existing = await this.imageModel.findUnique({ where: { name: data.name } });
         if (existing) return existing;

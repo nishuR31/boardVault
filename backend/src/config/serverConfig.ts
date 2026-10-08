@@ -53,7 +53,11 @@ fastifyApp.register(cors, {
       return;
     }
 
-    if (allowedOrigins.has(origin)) {
+    if (
+      allowedOrigins.has(origin) ||
+      /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ||
+      /^https:\/\/.*\.vercel\.app$/.test(origin)
+    ) {
       cb(null, true);
       return;
     }
