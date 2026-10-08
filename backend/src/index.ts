@@ -1,6 +1,6 @@
 import app from "./config/serverConfig";
 import { PORT, NODE_ENV } from "./config/envConfig";
-import redis, { disconnectRedis } from "./config/redisConfig";
+import { connectRedis, disconnectRedis } from "./config/redisConfig";
 
 const startServer = async () => {
   try {
@@ -19,9 +19,8 @@ const startServer = async () => {
   }
 };
 
-// await basePrisma.$connect();
 await startServer();
-await redis.connect();
+await connectRedis();
 
 async function gracefulShutdown(signal: string) {
   console.info(`\n Received ${signal}. Shutting down gracefully…`);
